@@ -34,7 +34,7 @@ alig_data = ...
  64, [17 29], [1061 1045 3281 3359];... % Recipe 64
  70, [9 -2],  [1026 1034 3229 2963]};   % Recipe 70
 
-recon_store = 'D:\Data\ReconJune2025';
+recon_store = 'D:\YourProjects\NC_Dataset\Reconstructions';
 results = cell(1,4);
 for ii = 1:4
 

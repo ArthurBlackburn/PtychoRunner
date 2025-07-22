@@ -23,8 +23,8 @@
 % 
 % *******************************************************************
 
-data_store_location = 'G:\Shared Projects\Ptycho\ExampleDataSets\AuOnC\SharedNC';
-source_file = 'Au_on_aC_114by114';
+data_store_location = 'D:\YourProjects\NC_Dataset\Source\Experimental';
+source_file = 'Au_on_aC_source';
 full_source_filename = fullfile(data_store_location, [source_file,'.hp']);
 %%
 % This block prepares a set that is 90 by 90 points, as oppossed to the orignal 114 by 114 mesh. 

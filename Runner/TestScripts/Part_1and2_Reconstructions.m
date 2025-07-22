@@ -33,8 +33,10 @@ fprintf(['Execution of m-file: %s ,\nStarted at %s ,\n',...
     sprintf('job name %s with job ID %s\n',getenv('SLURM_JOB_NAME'),getenv('SLURM_JOB_ID')));
 eval(sprintf('type ''%s\''',calling_name));
 
-% Put the path to your xls file here. The below is just an example:
-dataset_location = '/sharedNC/runs';
+% Put the path to your xls file here. It is recommended to make a copy of the xls file in
+% \Runner\TestScripts and place it another directory where you keep records of the reconstructions.
+% The below is just an example:
+dataset_location = 'D:\YourProjects\MyReconstructionRecords';
 
 % -- Run parameters are below here: Uncomment out the runs you want to do depending on your platform 
 % i.e., remove / move %{ and %} etc.

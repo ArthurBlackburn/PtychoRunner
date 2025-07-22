@@ -14,13 +14,13 @@
 % *******************************************************************
 
 % Where the copy of the publicly available reconstruction data is locally copied:
-recon_repository_location = 'D:\Data\ReconJune2025';
+recon_repository_location = 'D:\YourProjects\NC_Dataset\Reconstructions';
 
 % The filename of the ground truth test image. The ground truth test image was
 % designed to have a reasonably broad spectral content and contain  series of 
 % double-dot structures that can be used to allow assessment of resolution in the
 % classic Rayleigh sense of the meaning of resolution.
-ground_truth_location = 'D:\Data\ReconJune2025';
+ground_truth_location = 'D:\YourProjects\NC_Dataset\Reconstructions';
 padded_test_image_filename =   fullfile(recon_repository_location ,'testobject_2048pix_padded.mat');
 
 ground_truth = load(padded_test_image_filename);
