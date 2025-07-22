@@ -132,7 +132,7 @@ for kk = 1:par.Nscans
          update_score = update_score +j;
      end
     catch
-        keyboard
+        utils.keyboard_m(utils.verbose())
     end
         
 

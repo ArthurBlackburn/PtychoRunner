@@ -29,7 +29,7 @@ if ~isfield(p.save, 'store_images')
     p.save.store_images = true;
 end
 if ~p.save.store_images
-    close all
+%     close all % this is too strong... closes all externally created figures = not good!
 end
 
 % prepare container for meta data

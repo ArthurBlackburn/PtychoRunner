@@ -38,7 +38,7 @@ fs = get(gcf,'defaultaxesfontsize')+4;
 
 % Fudge factor to adjust y spacing between subplots
 fudge=1;
-% keyboard
+% utils.keyboard_m(utils.verbose())
 haold = gca;
 figunits = get(gcf,'units');
 

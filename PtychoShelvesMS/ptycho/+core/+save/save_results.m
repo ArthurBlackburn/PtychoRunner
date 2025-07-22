@@ -78,7 +78,7 @@ if p.plot.calc_FSC
             print_FSC = true;
         catch ME
             if p.verbose_level > 3
-                keyboard
+                utils.keyboard_m(utils.verbose())
             else
                 warning('Failed to calculate FSC.')
             end

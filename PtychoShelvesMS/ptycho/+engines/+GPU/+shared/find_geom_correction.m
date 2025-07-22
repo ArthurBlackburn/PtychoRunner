@@ -254,7 +254,7 @@ function [self] = find_geom_correction(self,cache, par, iter,best_mode_id)
 
     
     if any(isnan(mode.probe_positions(:)))
-        keyboard
+        utils.keyboard_m(utils.verbose())
     end
 
 

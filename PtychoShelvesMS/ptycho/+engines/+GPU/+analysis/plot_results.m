@@ -174,7 +174,7 @@ function plot_results(self, cache, par, fourier_error,probe_positions)
 
     catch err
         warning('Error during plotting: %s', err.message)
-        keyboard
+        utils.keyboard_m(utils.verbose())
         disp('plotting failed')
     end  
 

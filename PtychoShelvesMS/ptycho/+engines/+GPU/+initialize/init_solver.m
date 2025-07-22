@@ -14,7 +14,7 @@
 % Source Code
 % 
 % Introduction 
-% â€¢	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
+% •	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
 %   will grant you (hereafter "LICENSEE") a royalty-free, non-exclusive license for academic, non-commercial purposes only (hereafter "LICENSE") to use the cSAXS 
 %   ptychography MATLAB package computer software program and associated documentation furnished hereunder (hereafter "PROGRAM").
 % 
@@ -23,7 +23,7 @@
 %       hereinafter set out and until termination of this license as set forth below.
 % 2.	LICENSEE acknowledges that the PROGRAM is a research tool still in the development stage. The PROGRAM is provided without any related services, improvements 
 %       or warranties from LICENSOR and that the LICENSE is entered into in order to enable others to utilize the PROGRAM in their academic activities. It is the 
-%       LICENSEEâ€™s responsibility to ensure its proper use and the correctness of the results.â€
+%       LICENSEE’s responsibility to ensure its proper use and the correctness of the results.”
 % 3.	THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
 %       A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. IN NO EVENT SHALL THE LICENSOR, THE AUTHORS OR THE COPYRIGHT 
 %       HOLDERS BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE 
@@ -39,29 +39,29 @@
 %       Scherrer Institut, Switzerland."
 % 
 % Additionally, any publication using the package, or any translation of the code into another computing language should cite for difference map:
-% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379â€“382 (2008). 
+% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379–382 (2008). 
 %   (doi: 10.1126/science.1158573),
 % for mixed coherent modes:
-% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68â€“71 (2013). (doi: 10.1038/nature11806),
+% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68–71 (2013). (doi: 10.1038/nature11806),
 % for LSQ-ML method 
 % M. Odstrcil, A. Menzel, M.G. Sicairos,  Iterative least-squares solver for generalized maximum-likelihood ptychography, Optics Express, 2018
 % for OPRP method 
 %  M. Odstrcil, P. Baksh, S. A. Boden, R. Card, J. E. Chad, J. G. Frey, W. S. Brocklesby,  "Ptychographic coherent diffractive imaging with orthogonal probe relaxation." Optics express 24.8 (2016): 8360-8369
 % and/or for multislice:
-% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089â€“29108 (2016). 
+% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089–29108 (2016). 
 % 6.	Except for the above-mentioned acknowledgment, LICENSEE shall not use the PROGRAM title or the names or logos of LICENSOR, nor any adaptation thereof, nor the 
 %       names of any of its employees or laboratories, in any advertising, promotional or sales material without prior written consent obtained from LICENSOR in each case.
 % 7.	Ownership of all rights, including copyright in the PROGRAM and in any material associated therewith, shall at all times remain with LICENSOR, and LICENSEE 
 %       agrees to preserve same. LICENSEE agrees not to use any portion of the PROGRAM or of any IMPROVEMENTS in any machine-readable form outside the PROGRAM, nor to 
 %       make any copies except for its internal use, without prior written consent of LICENSOR. LICENSEE agrees to place the following copyright notice on any such copies: 
-%       Â© All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
+%       © All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
 % 8.	The LICENSE shall not be construed to confer any rights upon LICENSEE by implication or otherwise except as specifically set forth herein.
 % 9.	DISCLAIMER: LICENSEE shall be aware that Phase Focus Limited of Sheffield, UK has an international portfolio of patents and pending applications which relate 
 %       to ptychography and that the PROGRAM may be capable of being used in circumstances which may fall within the claims of one or more of the Phase Focus patents, 
 %       in particular of patent with international application number PCT/GB2005/001464. The LICENSOR explicitly declares not to indemnify the users of the software 
 %       in case Phase Focus or any other third party will open a legal action against the LICENSEE due to the use of the program.
 % 10.	This Agreement shall be governed by the material laws of Switzerland and any dispute arising out of this Agreement or use of the PROGRAM shall be brought before 
-%       the courts of ZÃ¼rich, Switzerland. 
+%       the courts of Zürich, Switzerland. 
 % 
 %   
 
@@ -96,7 +96,12 @@ function [self, cache] = init_solver(self,par)
     %% prepare data / noise / mask 
     if par.relax_noise &&  ~isempty(self.noise) &&  strcmp(par.likelihood, 'L1')
         Noise = self.noise;
-        Noise = (sqrt(posit(self.diffraction + Noise)) - sqrt(posit(self.diffraction - Noise)))/2;
+%       Noise = (sqrt(posit(self.diffraction + Noise)) - sqrt(posit(self.diffraction - Noise)))/2;
+% In the above ^^^
+% posit is not a built-in matlab function. I think the intention here might be to only let
+% posit's argument pass only if it is _posit_ive??, i.e. if -ve set to zero, so we have 
+% no complex numbers arising from the below
+        Noise = (sqrt(max(self.diffraction + Noise,0)) - sqrt(max(self.diffraction - Noise,0)))/2;
         Noise(self.diffraction == 0) = 1;
         disp('Using measured noise')
         Noise = max(0.5, Noise); 
@@ -139,6 +144,100 @@ function [self, cache] = init_solver(self,par)
         Mask = [];
     end
     
+    % Arthur Blackburn, University of Victoria,
+    % Added code to deal with creating masks
+    if ~isempty(par.p.border_mask) && par.p.border_mask(1) > 0
+        MaskBM = zeros(par.p.asize,'logical');
+        if length(par.p.border_mask) == 1
+            % Apply a simple boundary mask of width xx to the data.
+            mw = par.p.border_mask;
+            MaskBM([1:mw,(end-(mw-1)):end], :) = 1;
+            MaskBM(:, [1:mw,(end-(mw-1)):end]) = 1;
+            MaskBM = fftshift_2D(MaskBM);
+        elseif length(par.p.border_mask) == 3
+            % assume it's a cicular mask we are using here, for example to
+            % mask out the region of the HAADF detector in the SU9000 data.
+            if par.p.border_mask(1) == 0
+                r_cen = round(par.p.asize(1)/2)+1;
+            else
+                r_cen = par.p.border_mask(1);
+            end
+            if par.p.border_mask(2) == 0
+                c_cen = round(par.p.asize(2)/2)+1;
+            else
+                c_cen = par.p.border_mask(2);
+            end
+            radius = par.p.border_mask(3);
+            x_pts = (-r_cen-1):1:(par.p.asize(1)-r_cen-2);
+            y_pts = (-c_cen-1):1:(par.p.asize(2)-c_cen-2);
+            [xx, yy] = meshgrid(x_pts, y_pts);
+            MaskBM = (xx.^2 + yy.^2) > radius^2;
+            MaskBM = fftshift_2D(MaskBM);
+            clear xx yy
+        else
+            if ischar(par.p.border_mask) && strcmpi(par.p.border_mask, 'imdef')
+                % Define the mask by looking at values which are
+                % exactly zero in the sum of the all the diffraction images.
+                dp_sum = squeeze(sum(self.diffraction,3));
+                Mask = dp_sum == 0;                
+            else
+                % Assume that a 4 element array where
+                % corner points are: upper row, lower row, left col, right col.
+                MaskA = MaskBM; MaskB = MaskBM;
+                MaskA(   par.p.border_mask(1):par.p.border_mask(2), :) = 1;
+                MaskB(:, par.p.border_mask(3):par.p.border_mask(4))    = 1;
+                MaskBM = ~(MaskA & MaskB);
+                if length(par.p.border_mask) == 5
+                    % Then the 5th element is used to specify pincusion distortion...
+                    % However, 'imdef' above would also work well in most experimental cases 
+                    % for pincusion distortion.
+                    lens_options = {'borderType','fix',...
+                    'interpMethod', 'linear',...
+                    'padMethod','fill',...
+                    'padValue',1,...
+                    'fType',4,...
+                    'intensCorr',false};
+                    MaskBM = lensdistort(single(MaskBM), par.p.border_mask(5), lens_options{:});
+                    MaskBM = logical(MaskBM);
+                end
+                MaskBM = fftshift_2D(MaskBM);
+                clear MaskA MaskB
+            end
+        end
+        % self.mask and Mask might have been scaled in other functions:
+        if any(par.p.asize_presolve ~= par.p.asize)
+            fill_value = 1;  % fill value in case of ptychographic "super resolution"
+            MaskBM = fftshift_2D(MaskBM);
+            MaskBM = crop_pad(MaskBM, self.Np_p, fill_value);
+            MaskBM = ifftshift_2D(MaskBM);                        
+        end                
+        if ~isempty(Mask)
+            Mask = Mask | MaskBM;
+        else
+            Mask = MaskBM;
+        end
+        clear MaskBM;
+%         figure; imagesc(Mask); axis image;
+    end
+    
+    if ~isempty(par.p.cross_mask) && par.p.cross_mask(1) > 0
+        MaskBM = zeros(par.p.asize,'logical');
+        MaskA = MaskBM; MaskB = MaskBM;
+        MaskA(   par.p.cross_mask(1):(par.p.cross_mask(1) + par.p.cross_mask(3)), :) = 1;
+        MaskB(:, par.p.cross_mask(2):(par.p.cross_mask(2) + par.p.cross_mask(3)))    = 1;
+        MaskBM = MaskA & MaskB;
+        MaskBM = fftshift_2D(MaskBM);
+        clear MaskA MaskB
+        if ~isempty(Mask)
+            Mask = Mask | MaskBM;
+        else
+            Mask = MaskBM;
+        end
+        clear MaskBM;
+    end
+
+    
+    
     %% prepare diffraction data 
     Diffraction = self.diffraction;  % diffraction is intensity, not amplitude, comment by Zhen Chen
 
@@ -164,6 +263,7 @@ function [self, cache] = init_solver(self,par)
             Diffraction = Diffraction .* ~Mask;
         end
     end
+    
       
     
     if  ~isinf(self.z_distance(end)) %  && mod(Ninf,2)~=0
@@ -354,13 +454,18 @@ function [self, cache] = init_solver(self,par)
             modes{i}.probe_support = [];
         end
         
-        if ~isempty(self.probe_support_fft) && i <= par.Nrec && ~check_option(par,'probe_support_tem')
+        if ~isempty(self.probe_support_fft) && i <= par.Nrec && ~check_option(par.p,'probe_support_apt_radius')
             modes{i}.probe_support_fft = fftshift(self.probe_support_fft); 
             if i == 1
                 verbose(2,'Using far-field probe support')
             end                      
-        elseif check_option(par,'probe_support_tem') % not shift for TEM aperture, by Zhen Chen
-            modes{i}.probe_support_fft = self.probe_support_fft; 
+        elseif check_option(par.p,'probe_support_apt_radius') % not shift for TEM aperture, by Zhen Chen
+        % Zhen Chen did not do a fftshift, [but I - A.B. at UVic - am the way I've defined things 
+        % (See load_from_p L255)]
+            modes{i}.probe_support_fft = fftshift(self.probe_support_fft);
+            if i == 1
+                verbose(2,'Applying constraint on fft of probe defined by probe_support_apt_radius')
+            end 
         else 
             modes{i}.probe_support_fft = [];
         end
@@ -621,7 +726,8 @@ function [self, cache] = init_solver(self,par)
             cache.background_profile = apply_deform(cache.background_profile, self.diffraction_deform_matrix');
         end
     else
-         cache.background_profile_weight = 1; 
+    	% looks like cache.background_profile_weight = .. was a typo;
+         cache.background_weight = 1; 
     end
     
 

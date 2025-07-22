@@ -73,6 +73,6 @@ function match = is_method(par, method)
             match = match || contains(lower(par.method), lower(method{i})); 
         end
     catch
-        keyboard
+        utils.keyboard_m(utils.verbose())
     end
 end

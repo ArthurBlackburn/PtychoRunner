@@ -140,7 +140,7 @@ function obj_proj = get_views(object, obj_proj,layer_ids,object_id, indices, cac
         object = object{object_id, layer_ids};
     end
     catch
-        keyboard
+        utils.keyboard_m(utils.verbose())
     end 
     
     if ~isempty(cache.skip_ind) && ~isempty(skip_ind)

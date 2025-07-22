@@ -134,7 +134,7 @@ req_press = strsplit(req_press, '=');
 req_press = strsplit(req_press{2}, ' ');
 req_press = str2double(req_press{1});
 
-%keyboard
+%utils.keyboard_m(utils.verbose())
 
 % output
 if npts==2 && ~req_range

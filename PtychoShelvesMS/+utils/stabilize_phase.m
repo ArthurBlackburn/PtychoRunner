@@ -36,14 +36,14 @@
 %         img_out = img_orig.*exp(1i*c_offset);
 
 %*-----------------------------------------------------------------------*
-%|Â  Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%|Â  Except where otherwise noted, this work is licensed under aÂ Â  Â Â Â Â Â Â Â |
-%|Â  Creative Commons Attribution-NonCommercial-ShareAlike 4.0 Â Â Â Â Â Â Â Â Â Â Â |
-%|Â  International (CC BY-NC-SA 4.0) license. Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%| Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%|Â  Copyright (c) 2017 by Paul Scherrer Institute (http://www.psi.ch)Â Â Â  |
-%|Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%|Â Â Â Â Â   Author: CXS group, PSI                                         Â |
+%|                                                                       |
+%|  Except where otherwise noted, this work is licensed under a          |
+%|  Creative Commons Attribution-NonCommercial-ShareAlike 4.0            |
+%|  International (CC BY-NC-SA 4.0) license.                             |
+%|                                                                       |
+%|  Copyright (c) 2017 by Paul Scherrer Institute (http://www.psi.ch)    |
+%|                                                                       |
+%|       Author: CXS group, PSI                                          |
 %*-----------------------------------------------------------------------*
 % You may use this code with the following provisions:
 %
@@ -53,9 +53,9 @@
 % If this code, or subfunctions or parts of it, is used for research in a 
 %   publication or if it is fully or partially rewritten for another 
 %   computing language the authors and institution should be acknowledged 
-%   in written form in the publication: â€œData processing was carried out 
-%   using the â€œcSAXS matlab packageâ€ developed by the CXS group,
-%   Paul Scherrer Institut, Switzerland.â€ 
+%   in written form in the publication: “Data processing was carried out 
+%   using the “cSAXS matlab package” developed by the CXS group,
+%   Paul Scherrer Institut, Switzerland.” 
 %   Variations on the latter text can be incorporated upon discussion with 
 %   the CXS group if needed to more specifically reflect the use of the package 
 %   for the published work.
@@ -65,7 +65,7 @@
 %    authors.
 %   
 % This code and subroutines are part of a continuous development, they 
-%    are provided â€œas they areâ€ without guarantees or liability on part
+%    are provided “as they are” without guarantees or liability on part
 %    of PSI or the authors. It is the user responsibility to ensure its 
 %    proper use and the correctness of the results.
 
@@ -94,6 +94,7 @@ function [img_out, gamma,gamma_x, gamma_y, c_offset] = stabilize_phase(img_orig,
     
     [M0,N0,~] = size(img_orig);
     if isreal(img_orig)
+        img_out = img_orig;
         return  % if the input is real, no phase shift is needed 
     end
     if isempty(img_ref)

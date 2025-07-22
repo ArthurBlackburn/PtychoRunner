@@ -22,7 +22,11 @@ det.mask_below_value = [];              % mask pixels below given value
 det.data_stored = true;                % false == data are generated "onfly", no need to load / store
 %det.geometry.sz = [1030 514];           % detector readout size
 % det.geometry.sz = [256 256];           % detector readout size
-det.geometry.sz = [512 512];           % detector readout size, By Zhen Chen, 512x512 supported
+% det.geometry.sz = [512 512];           % detector readout size, By Zhen Chen, 512x512 supported
+%
+% As I (A.B. at UVic) am using this file to sometimes load data from other detectors, I'm making it variable size
+% rather than hard coded:
+det.geometry.sz = p.asize;
 
 det.geometry.mask = [];                 % if the mask is larger than the readout 
                                         % geometry (det.geometry.sz), geometry.mask defines the readout for the mask

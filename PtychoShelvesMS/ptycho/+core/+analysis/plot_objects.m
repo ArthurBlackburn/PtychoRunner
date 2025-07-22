@@ -226,7 +226,7 @@ for obmode = 1:p.object_modes
         try
             amp_range = sp_quantile(absob(plot_mask),[1e-4,1-1e-4], 10); 
         catch
-            keyboard
+            utils.keyboard_m(utils.verbose())
         end
         if amp_range(1) < amp_range(2)
             caxis(amp_range);

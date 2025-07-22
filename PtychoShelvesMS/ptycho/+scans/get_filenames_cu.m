@@ -1,6 +1,16 @@
 % Compile filenames for hdf5 data files
 % written by YJ based on PSI's code
 
+%
+%
+%{
+Notes from Arthur Blackburn, UVic: 
+%Note: detStorage is handle class, so mods to it alter p, unlike the more usual 
+% Matlab pass by value approach.
+Also, in my workflow, I'm not using scan numbers or scanformat in filename. 
+I'm also flexible with the filename, so let's assume there is just one scan...
+%}
+
 function [p] = get_filenames_cu(p)
 import utils.*
 
@@ -13,15 +23,31 @@ detStorage = p.detectors(p.scanID).detStorage;
 %detStorage.files = strcat(p.base_path,'fly''data_roi',p.scan.roi_label,'_dp.hdf5');                
 detStorage.files = [];
 
-for ii = 1:p.numscans
-    detStorage.files{ii} = strcat(p.base_path,sprintf(p.scan.format, p.scan_number(ii)),'/data_dp.hdf5');  
-    if ~exist(detStorage.files{ii},'file') % add .mat support by Zhen Chen
-        detStorage.files{ii}=strrep(detStorage.files{ii},'hdf5','mat');
-        if ~exist(detStorage.files{ii},'file')
-            error('data file name wrong, should be data_dp.hdf5 or data_dp.mat');
-        end
-    end
+if isfield(p.detector,'dp_dat_filename')
+    fname = p.detector.dp_dat_filename;
+else
+    fname = 'data_dp.mat';
 end
+detStorage.files{1} = fullfile(p.base_path,fname);
+
+end
+
+% Below illustrates other ways of doing things...
+
+% for ii = 1:p.numscans
+%     detStorage.files{ii} = strcat(p.base_path,sprintf(p.scan.format, p.scan_number(ii)),'/data_dp.hdf5');  
+%     if ~exist(detStorage.files{ii},'file') % add .mat support by Zhen Chen
+%         detStorage.files{ii}=strrep(detStorage.files{ii},'hdf5','mat');
+%         if ~exist(detStorage.files{ii},'file')
+%             error('data file name wrong, should be data_dp.hdf5 or data_dp.mat');
+%         end
+%     end
+% end
+
+
+
+
+
 
 %{
 if isfield(det, 'filename_pattern')
@@ -184,5 +210,5 @@ for ii=1:length(det.image_read_extraargs)
     end
 end
 %}
-end
+%end
 

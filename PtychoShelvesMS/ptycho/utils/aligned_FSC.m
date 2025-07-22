@@ -58,7 +58,7 @@
 % Source Code
 %
 % Introduction 
-% â€¢	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
+% •	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
 %   will grant you (hereafter "LICENSEE") a royalty-free, non-exclusive license for academic, non-commercial purposes only (hereafter "LICENSE") to use the cSAXS 
 %   ptychography MATLAB package computer software program and associated documentation furnished hereunder (hereafter "PROGRAM").
 %
@@ -67,7 +67,7 @@
 %       hereinafter set out and until termination of this license as set forth below.
 % 2.	LICENSEE acknowledges that the PROGRAM is a research tool still in the development stage. The PROGRAM is provided without any related services, improvements 
 %       or warranties from LICENSOR and that the LICENSE is entered into in order to enable others to utilize the PROGRAM in their academic activities. It is the 
-%       LICENSEEâ€™s responsibility to ensure its proper use and the correctness of the results.â€
+%       LICENSEE’s responsibility to ensure its proper use and the correctness of the results.”
 % 3.	THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
 %       A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. IN NO EVENT SHALL THE LICENSOR, THE AUTHORS OR THE COPYRIGHT 
 %       HOLDERS BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE 
@@ -83,31 +83,31 @@
 %       Scherrer Institut, Switzerland."
 %
 % Additionally, any publication using the package, or any translation of the code into another computing language should cite for difference map:
-% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379â€“382 (2008). 
+% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379–382 (2008). 
 %   (doi: 10.1126/science.1158573),
 % for maximum likelihood:
 % P. Thibault and M. Guizar-Sicairos, Maximum-likelihood refinement for coherent diffractive imaging, New J. Phys. 14, 063004 (2012). 
 %   (doi: 10.1088/1367-2630/14/6/063004),
 % for mixed coherent modes:
-% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68â€“71 (2013). (doi: 10.1038/nature11806),
+% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68–71 (2013). (doi: 10.1038/nature11806),
 % and/or for multislice:
-% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089â€“29108 (2016). 
+% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089–29108 (2016). 
 %   (doi: 10.1364/OE.24.029089).
 % 6.	Except for the above-mentioned acknowledgment, LICENSEE shall not use the PROGRAM title or the names or logos of LICENSOR, nor any adaptation thereof, nor the 
 %       names of any of its employees or laboratories, in any advertising, promotional or sales material without prior written consent obtained from LICENSOR in each case.
 % 7.	Ownership of all rights, including copyright in the PROGRAM and in any material associated therewith, shall at all times remain with LICENSOR, and LICENSEE 
 %       agrees to preserve same. LICENSEE agrees not to use any portion of the PROGRAM or of any IMPROVEMENTS in any machine-readable form outside the PROGRAM, nor to 
 %       make any copies except for its internal use, without prior written consent of LICENSOR. LICENSEE agrees to place the following copyright notice on any such copies: 
-%       Â© All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
+%       © All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
 % 8.	The LICENSE shall not be construed to confer any rights upon LICENSEE by implication or otherwise except as specifically set forth herein.
 % 9.	DISCLAIMER: LICENSEE shall be aware that Phase Focus Limited of Sheffield, UK has an international portfolio of patents and pending applications which relate 
 %       to ptychography and that the PROGRAM may be capable of being used in circumstances which may fall within the claims of one or more of the Phase Focus patents, 
 %       in particular of patent with international application number PCT/GB2005/001464. The LICENSOR explicitly declares not to indemnify the users of the software 
 %       in case Phase Focus or any other third party will open a legal action against the LICENSEE due to the use of the program.
 % 10.	This Agreement shall be governed by the material laws of Switzerland and any dispute arising out of this Agreement or use of the PROGRAM shall be brought before 
-%       the courts of ZÃ¼rich, Switzerland. 
+%       the courts of Zürich, Switzerland. 
 
-function [resolution,stat] = aligned_FSC(file1,file2,param)
+function [resolution,stat, FSC,T,freq,n] = aligned_FSC(file1,file2,param)
 import utils.*
 import math.*
 import io.*
@@ -146,6 +146,7 @@ check_image_prop = @(x) assert(any(contains({'complex', 'phasor', 'phase', 'vari
 parse_param = inputParser;
 parse_param.KeepUnmatched = true;
 
+parse_param.addParameter('do_align',true, check_input); % added by A.B. to allow non-aligned use of subfields in particle_FRC_res
 parse_param.addParameter('flipped_images', false, check_input)
 parse_param.addParameter('crop', '', check_crop)
 parse_param.addParameter('GUIguess', false, check_input)
@@ -169,6 +170,11 @@ parse_param.addParameter('pixel_size', [], @isnumeric)
 parse_param.addParameter('verbose_level', 3, @isnumeric)
 parse_param.addParameter('fname', [], @iscell)
 parse_param.addParameter('show_summary', true, check_input)
+% A.B. at UVic - Allow control of a few more things:
+parse_param.addParameter('xlabel_type',  'nyquist', @(x)ismember(lower(x), {'nyquist', 'resolution'}))     % select X axis units
+parse_param.addParameter('show_2D_fourier_corr',  false , @islogical )  % instead of rings, show rather 2D distribution of the Fourier correlation
+parse_param.addParameter('use_window',false,@islogical);
+parse_param.addParameter('window_type','hann',@(x) ismember(x,{'hann','hamming'}));
 
 parse_param.parse(param)
 param = parse_param.Results;
@@ -375,7 +381,8 @@ elseif strcmpi(param.crop, 'manual')
     title('Select compared region')
     disp('Manually select the compared region ... ')
     rect = round(getrect);
-    param.crop = {rect(2)+(1:rect(4)),rect(1)+(1:rect(3))};
+    % make this consistent with below and symmetric wrt to boundaries.
+    param.crop = {rect(2)+(0:1:rect(4)), rect(1)+(0:1:rect(3)) }; 
     disp('===========================')
     fprintf('Selected region: {%i:%i,%i:%i}\n',rect(2), rect(2)+rect(4), rect(1), rect(1)+rect(3));
     disp('===========================')
@@ -384,27 +391,34 @@ end
 if ~isempty(param.crop)
     img1 = img1(param.crop{:});
     img2 = img2(param.crop{:});
+%     mask = mask(param.crop{:});
 end
 
 if param.GUIguess
+    fprintf('Zoom figures now prior to picking features. Press any key when done\n');
+    pause;
     plotting.smart_figure(21)
-    disp(['Click on a feature on figure 2'])
+    disp(['Click on a feature on figure 21'])
     [xin yin] = ginput(1);
     plotting.smart_figure(22)
-    disp(['Click on a feature on figure 3'])
+    disp(['Click on a feature on figure 22'])
     [xin2 yin2] = ginput(1);
     param.guessx = round(xin-xin2);
     param.guessy = round(yin-yin2);
 end
+
+fprintf('Initial Offset Guess: [x: %i, y: %i]\n',param.guessx, param.guessy);
 
 if ~isempty(param.guessx)
     switch sign(param.guessx)
         case 1
             img1 = img1(:,1+param.guessx:end);
             img2 = img2(:,1:end-param.guessx);
+%             mask = mask(:,1+param.guessx:end);
         case -1
             img1 = img1(:,1:end+param.guessx);
             img2 = img2(:,1-param.guessx:end);
+%             mask = mask(:,1:end+param.guessx);
     end
 end
 if ~isempty(param.guessy)
@@ -412,9 +426,11 @@ if ~isempty(param.guessy)
         case 1
             img1 = img1(1+param.guessy:end,:);
             img2 = img2(1:end-param.guessy,:);
+%             mask = mask(1+param.guessy:end,:);
         case -1
             img1 = img1(1:end+param.guessy,:);
             img2 = img2(1-param.guessy:end,:);
+%             mask = mask(1-param.guessy:end,:);
     end
 end
 
@@ -495,33 +511,56 @@ y1 = [];%[1:238];
 y2 = y1;
 
 
-
+% In the cases where we are working with subimages from a larger image, we should
+% keep the alignment the same on all subfields. In which case the initial
+% guess MUST be good, and come from an prior attempt at performing FSC
+% measure on the whole field of view.
+if (param.do_align) 
 % imgalign2 = shiftpp2(imgalign2,10,-10); % To test range adjustment
-[subim1, subim2, delta, deltafine, regionsout] = registersubimages_2(imgalign1,imgalign2, x1, y1, x2, y2, upsamp, displ,1);
-
+    [~, ~, delta, ~, regionsout] = registersubimages_2(imgalign1, imgalign2, x1, y1, x2, y2, upsamp, displ,1);
+    %%% A patch for deltafine large
+    % note delta(1) is y; delta (2) is x. In ginput etc, (1) is x, (2) is y...
+    if max(regionsout.y2+round(delta(1)))>size(img2,1)
+        warning('First subpixel registration refinement found large values')
+        regionsout.y2 = [min(regionsout.y2):size(img2,1)-round(delta(1))];
+        regionsout.y1 = regionsout.y2;
+    end
+    
+    if max(regionsout.x2+round(delta(2)))>size(img2,2)
+        warning('First subpixel registration refinement found large values')
+        regionsout.x2 = [min(regionsout.x2):size(img2,2)-round(delta(2))];
+        regionsout.x1 = regionsout.x2;
+    end    
+else
+    [nc2,nr2] = size(imgalign2);
+    if isempty(x1)
+        regionsout.x1 = 1:nr2;
+    end
+    if isempty(x2)
+        regionsout.x2 = regionsout.x1;
+    end
+    if isempty(y1)
+        regionsout.y1 = 1:nc2;
+    end
+    if isempty(y2)
+        regionsout.y2 = regionsout.y1;
+    end
+    delta = [0,0];
+end
 %%% Fine alignment (second round) %%%
+
+%%%
+subimg1 = img1(regionsout.y1,regionsout.x1);
+subimg2 = img2(regionsout.y2+round(delta(1)),regionsout.x2+round(delta(2))); 
+
 
 % Remove ramp for fine alignment
 utils.verbose(2,'Removing ramp for fine alignment')
-%%% A patch for deltafine large
-if max(regionsout.y2+round(delta(1)))>size(img2,1)
-    warning('First subpixel registration refinement found large values')
-    regionsout.y2 = [min(regionsout.y2):size(img2,1)-round(delta(1))];
-    regionsout.y1 = regionsout.y2;
-end
-if max(regionsout.x2+round(delta(2)))>size(img2,2)
-    warning('First subpixel registration refinement found large values')
-    regionsout.x2 = [min(regionsout.x2):size(img2,2)-round(delta(2))];
-    regionsout.x1 = regionsout.x2;
-end
-%%%
-subimg1 = img1(regionsout.y1,regionsout.x1);
-subimg2 = img2(regionsout.y2+round(delta(1)),regionsout.x2+round(delta(2)));
+
 if ~flag_imread
     subimg1 = remove_linearphase_v2(subimg1,ones(size(subimg1)),100);
     subimg2 = remove_linearphase_v2(subimg2,ones(size(subimg2)),100);
 end
-
 
 % Remove ramp 
 if param.remove_ramp
@@ -529,6 +568,9 @@ if param.remove_ramp
     subimg1 = utils.stabilize_phase(subimg1,'binning', 4);
     subimg2 = utils.stabilize_phase(subimg2, subimg1, 'binning', 4);
 end
+% Comment (A.B.): Looks like the above removes ramp twice in some cases.
+% Won't do any harm, but wastes a bit of time?
+
 
 if ~flag_imread
     switch lower(param.image_prop)
@@ -555,19 +597,25 @@ else
    subimgalign2 = subimg2; 
 end
 
-% Fine alignment %
-utils.verbose(2,'Fine alignment')
-[subim1, subim2, delta, deltafine, regionsout] = registersubimages_2(subimgalign1,subimgalign2, x1, y1, x2, y2, upsamp, displ,1);
 
-%%% propare images for FSC if variation was used for alignement 
-if strcmpi(param.image_prop, 'variation')
-    subim1 = subimg1(regionsout.y1, regionsout.x1); 
-    subim2 = subimg2(regionsout.y2, regionsout.x2); 
-    subim2 = shiftpp2(subim2,-deltafine(1), -deltafine(2)); %% Suboptimal, change to use a routine that receives FT data
-    % convert images to phasor 
-    subim1 = exp(1i*angle(subim1));
-    subim2 = exp(1i*angle(subim2));
+if (param.do_align)
+% Fine alignment %
+    utils.verbose(2,'Fine alignment')
+    [subim1, subim2, ~, deltafine, regionsout] = registersubimages_2(subimgalign1,subimgalign2, x1, y1, x2, y2, upsamp, displ,1);
+    %%% prepare images for FSC if variation was used for alignement 
+    if strcmpi(param.image_prop, 'variation')
+        subim1 = subimg1(regionsout.y1, regionsout.x1); 
+        subim2 = subimg2(regionsout.y2, regionsout.x2); 
+        subim2 = shiftpp2(subim2,-deltafine(1), -deltafine(2)); %% Suboptimal, change to use a routine that receives FT data
+        % convert images to phasor 
+        subim1 = exp(1i*angle(subim1));
+        subim2 = exp(1i*angle(subim2));
+    end
+else
+    subim1 = subimgalign1;
+    subim2 = subimgalign2;
 end
+
 
 %%% Tapering %%%
 filterx = fract_hanning_pad(size(subim1,2),size(subim1,2),size(subim1,2)-2*taper);

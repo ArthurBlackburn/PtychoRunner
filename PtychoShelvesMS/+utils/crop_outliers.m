@@ -55,6 +55,6 @@ function mask_new = crop_outliers(mask, number_of_objects)
         try
             mask_new = ismember(L0, n(ind(max(1,end - number_of_objects+1):end)));
         catch
-            keyboard
+            utils.keyboard_m(utils.verbose())
         end
 end 

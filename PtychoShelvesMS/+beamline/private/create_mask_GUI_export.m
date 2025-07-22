@@ -280,7 +280,7 @@ function popupmenu1_Callback(hObject, eventdata, handles)
 
 % Hints: contents = get(hObject,'String') returns popupmenu1 contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu1
-keyboard
+utils.keyboard_m(utils.verbose())
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu1_CreateFcn(hObject, eventdata, handles)

@@ -93,7 +93,7 @@ function [probe, probe_evolution] = apply_SVD_filter(probe, Nmodes, mode)
 %             S = single(S(1:Nmodes,1:Nmodes));
 %             V = single(V(:,1:Nmodes));
 %          catch
-%              keyboard
+%              utils.keyboard_m(utils.verbose())
 %          end            
 %      end
 

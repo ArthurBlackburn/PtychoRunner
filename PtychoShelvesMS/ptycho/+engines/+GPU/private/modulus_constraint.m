@@ -20,7 +20,7 @@
 % Source Code
 % 
 % Introduction 
-% â€¢	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
+% •	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
 %   will grant you (hereafter "LICENSEE") a royalty-free, non-exclusive license for academic, non-commercial purposes only (hereafter "LICENSE") to use the cSAXS 
 %   ptychography MATLAB package computer software program and associated documentation furnished hereunder (hereafter "PROGRAM").
 % 
@@ -29,7 +29,7 @@
 %       hereinafter set out and until termination of this license as set forth below.
 % 2.	LICENSEE acknowledges that the PROGRAM is a research tool still in the development stage. The PROGRAM is provided without any related services, improvements 
 %       or warranties from LICENSOR and that the LICENSE is entered into in order to enable others to utilize the PROGRAM in their academic activities. It is the 
-%       LICENSEEâ€™s responsibility to ensure its proper use and the correctness of the results.â€
+%       LICENSEE’s responsibility to ensure its proper use and the correctness of the results.”
 % 3.	THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
 %       A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. IN NO EVENT SHALL THE LICENSOR, THE AUTHORS OR THE COPYRIGHT 
 %       HOLDERS BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE 
@@ -45,29 +45,29 @@
 %       Scherrer Institut, Switzerland."
 % 
 % Additionally, any publication using the package, or any translation of the code into another computing language should cite for difference map:
-% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379â€“382 (2008). 
+% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379–382 (2008). 
 %   (doi: 10.1126/science.1158573),
 % for mixed coherent modes:
-% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68â€“71 (2013). (doi: 10.1038/nature11806),
+% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68–71 (2013). (doi: 10.1038/nature11806),
 % for LSQ-ML method 
 % M. Odstrcil, A. Menzel, M.G. Sicairos,  Iterative least-squares solver for generalized maximum-likelihood ptychography, Optics Express, 2018
 % for OPRP method 
 %  M. Odstrcil, P. Baksh, S. A. Boden, R. Card, J. E. Chad, J. G. Frey, W. S. Brocklesby,  "Ptychographic coherent diffractive imaging with orthogonal probe relaxation." Optics express 24.8 (2016): 8360-8369
 % and/or for multislice:
-% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089â€“29108 (2016). 
+% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089–29108 (2016). 
 % 6.	Except for the above-mentioned acknowledgment, LICENSEE shall not use the PROGRAM title or the names or logos of LICENSOR, nor any adaptation thereof, nor the 
 %       names of any of its employees or laboratories, in any advertising, promotional or sales material without prior written consent obtained from LICENSOR in each case.
 % 7.	Ownership of all rights, including copyright in the PROGRAM and in any material associated therewith, shall at all times remain with LICENSOR, and LICENSEE 
 %       agrees to preserve same. LICENSEE agrees not to use any portion of the PROGRAM or of any IMPROVEMENTS in any machine-readable form outside the PROGRAM, nor to 
 %       make any copies except for its internal use, without prior written consent of LICENSOR. LICENSEE agrees to place the following copyright notice on any such copies: 
-%       Â© All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
+%       © All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
 % 8.	The LICENSE shall not be construed to confer any rights upon LICENSEE by implication or otherwise except as specifically set forth herein.
 % 9.	DISCLAIMER: LICENSEE shall be aware that Phase Focus Limited of Sheffield, UK has an international portfolio of patents and pending applications which relate 
 %       to ptychography and that the PROGRAM may be capable of being used in circumstances which may fall within the claims of one or more of the Phase Focus patents, 
 %       in particular of patent with international application number PCT/GB2005/001464. The LICENSOR explicitly declares not to indemnify the users of the software 
 %       in case Phase Focus or any other third party will open a legal action against the LICENSEE due to the use of the program.
 % 10.	This Agreement shall be governed by the material laws of Switzerland and any dispute arising out of this Agreement or use of the PROGRAM shall be brought before 
-%       the courts of ZÃ¼rich, Switzerland. 
+%       the courts of Zürich, Switzerland. 
 % 
 %   
 
@@ -89,18 +89,44 @@ function [chi,R] = modulus_constraint(modF,aPsi ,Psi, mask, noise, par, R_offset
            mask = utils.unbinning_2D(mask, 2^par.upsampling_data_factor );  
         end
     end
-            
+    
+    if ~isempty(par.p.edgezeros) && par.p.edgezeros > 0
+        % Force the edge of the DP before back projection (chi here, 
+        % Psi in calling functions) to zero.
+        % This is for use when using 'super-resolution'
+        % techniques such as described by Maiden.
+        % Note Psi is fftshifted so we set the centre rows
+        % and cols here to zero.
+        % [Added by Arthur B, UVic, 2022]  
+        edge_zeroset = true;
+        edge_width = par.p.edgezeros;
+        % zeros_inds_rows = round(par.p.asize_presolve(1)/2) + [-(edge_width-1) , edge_width];
+        % zeros_inds_cols = round(par.p.asize_presolve(2)/2) + [-(edge_width-1) , edge_width];
+        zeros_inds_rows = round(par.Np_p_presolve(1)/2) + [-(edge_width-1) , edge_width];
+        zeros_inds_cols = round(par.Np_p_presolve(2)/2) + [-(edge_width-1) , edge_width];
+    else
+        edge_zeroset = false;
+    end
         
     %% write the most common cases as merged kernels 
     if nargout == 1
         if isempty(mask) && isempty(noise) && relax_noise == 0 && strcmpi(likelihood, 'l1') && Nmodes == 1  % common modulus constraint 
-            chi{1} = Gfun(@modulus_non_relaxed,Psi{1},modF, aPsi, R_offset); 
+            chi{1} = Gfun(@modulus_non_relaxed,Psi{1},modF, aPsi, R_offset);
+            if edge_zeroset 
+                chi{1}(zeros_inds_rows(1):zeros_inds_rows(2), :) = 0;
+                chi{1}(:, zeros_inds_cols(1):zeros_inds_cols(2)) = 0;
+            end
             return
         end
         if ~isempty(mask) && isempty(noise) && strcmpi(likelihood, 'l1') && Nmodes == 1  % common modulus constraint 
-            chi{1} = Gfun(@modulus_weight_relaxed,Psi{1},modF, aPsi,mask, R_offset); 
+            chi{1} = Gfun(@modulus_weight_relaxed,Psi{1},modF, aPsi,mask, R_offset);
+            if edge_zeroset 
+                chi{1}(zeros_inds_rows(1):zeros_inds_rows(2), :) = 0;
+                chi{1}(:, zeros_inds_cols(1):zeros_inds_cols(2)) = 0;
+            end
             return
         end
+
     end
     
     if isempty(mask) && isempty(noise) && relax_noise == 0  % common modulus constraint 
@@ -124,10 +150,16 @@ function [chi,R] = modulus_constraint(modF,aPsi ,Psi, mask, noise, par, R_offset
         R = Gfun(@noise_weight_relaxed, modF, aPsi, noise,relax_noise, mask, R_offset); 
     end
     
-    for i = 1:Nmodes
-        chi{i} = Psi{i} .* R;  % apply the constraint to the currect estimation 
+    if edge_zeroset 
+        R(zeros_inds_rows(1):zeros_inds_rows(2), :) = 0;
+        R(:, zeros_inds_cols(1):zeros_inds_cols(2)) = 0;
     end
-            
+        
+    for i = 1:Nmodes
+        chi{i} = Psi{i} .* R;  % apply the constraint to the correct estimation 
+    end
+    
+
 end
 
 % classical modulus 

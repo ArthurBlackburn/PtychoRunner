@@ -135,7 +135,7 @@ try
                 % estimate optimal friction from previous steps 
                 poly_fit = polyfit(repmat(0:momentum_memory,probe_modes,1),[zeros(1,probe_modes);log(corr_level)]',1); 
 catch
-    keyboard
+    utils.keyboard_m(utils.verbose())
 end
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 gain = par.momentum;                           % smaller -> lower relative speed (less momentum)
@@ -180,7 +180,7 @@ end
                drawnow 
            end
         catch
-            keyboard
+            utils.keyboard_m(utils.verbose())
         end
 
    end

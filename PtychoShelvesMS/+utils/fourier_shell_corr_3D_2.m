@@ -29,21 +29,21 @@
 %                         SSNR, area under FSC curve. average SNR, ....
 
 %*-----------------------------------------------------------------------*
-%|Â  Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%|Â  Except where otherwise noted, this work is licensed under aÂ Â  Â Â Â Â Â Â Â |
-%|Â  Creative Commons Attribution-NonCommercial-ShareAlike 4.0 Â Â Â Â Â Â Â Â Â Â Â |
-%|Â  International (CC BY-NC-SA 4.0) license. Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%| Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%|Â  Copyright (c) 2017 by Paul Scherrer Institute (http://www.psi.ch)Â Â Â  |
-%|Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
-%|Â Â Â Â Â   Author: CXS group, PSI                                         Â |
-%|Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â |
+%|                                                                       |
+%|  Except where otherwise noted, this work is licensed under a          |
+%|  Creative Commons Attribution-NonCommercial-ShareAlike 4.0            |
+%|  International (CC BY-NC-SA 4.0) license.                             |
+%|                                                                       |
+%|  Copyright (c) 2017 by Paul Scherrer Institute (http://www.psi.ch)    |
+%|                                                                       |
+%|       Author: CXS group, PSI                                          |
+%|                                                                       |
 %*-----------------------------------------------------------------------*
 % You may use this code with the following provisions:
 %
 % If this code, or subfunctions or parts of it, is used for research in a 
-% Â Â publication or if it is fully or partially rewritten for another 
-% Â Â computing language this copyright should be retained and the authors 
+%   publication or if it is fully or partially rewritten for another 
+%   computing language this copyright should be retained and the authors 
 %   and institution should be acknowledged in written form. Additionally 
 %   you should cite the publication most relevant for the implementation 
 %   of this code, namely
@@ -57,13 +57,13 @@
 %   criteria," Journal of Structural Biology 151, 250-262 (2005).
 %
 % A publication that focuses on describing features, or parameters, that
-% Â Â Â are already existing in the code should be first discussed with the
-% Â Â Â authors.
-% Â Â 
+%    are already existing in the code should be first discussed with the
+%    authors.
+%   
 % This code and subroutines are part of a continuous development, they 
-%Â Â Â  are provided â€œas they areâ€ without guarantees or liability on part
-%Â Â Â  of PSI or the authors. It is the user responsibility to ensure its 
-% Â Â Â proper use and the correctness of the results.
+%    are provided “as they are” without guarantees or liability on part
+%    of PSI or the authors. It is the user responsibility to ensure its 
+%    proper use and the correctness of the results.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [resolution FSC T freq n stat] = fourier_shell_corr_3D_2(img1,img2,param, varargin)
@@ -96,6 +96,8 @@ parser.addParameter('figure_id',  100, @isint)     % call figure(figure_id)
 parser.addParameter('clear_figure',  false, @islogical)     % clear figure before plotting 
 parser.addParameter('out_fn',  [], @isstr)     % saving path for the image 
 parser.addParameter('show_summary', true, @islogical) % show summary at the end
+parser.addParameter('use_window',false,@islogical);
+parser.addParameter('window_type','hann',@(x) ismember(x,{'hann','hamming'}));
 
 parser.parse(varargin{:})
 r = parser.Results;
@@ -127,7 +129,31 @@ if any(size(img1) ~= size(img2))
     error('Images must be the same size')
 end
 
-    
+% Below added by Arthur Blackburn, U. Vic.:
+% Adding window to FFT, similar to soft circle approach
+% mentioned by Heel et al, in Journal of Structural Biology 151 (2005) 250–262
+%
+% Note added ths before noticing the tapering option in function that calls
+% this function. Tapering performs same thing, more or less... I wish
+% better documentation was available for ptychoshevles code.
+if param.use_window
+    n_max = max(size(img1));
+    if strcmpi(param.window_type,'hann')        
+        window = .5*(1 - cos(2*pi*(0:n_max-1)'/(n_max-1)));
+    end
+    if strcmpi(param.window_type,'hamming')
+        window = 0.54 - 0.46*cos(2*pi*(0:n_max-1)'/(n_max-1));
+    end
+    window = (window*window');
+    % just in case not square, though usually it is by now
+    if size(img1,1) ~= size(img1,2)
+        window = imresize(window,size(img1));
+    end
+    img1 = img1.*window;
+    img2 = img2.*window;    
+end
+
+
 [ny,nx,nz] = size(img1);
 nmin = min(size(img1));
 
@@ -266,6 +292,9 @@ if isempty(range_start)
 end
 
 resolution = [pixel_nm/range_start, pixel_nm/range(end)];
+% Note: the authors here use the 'half-period resolution
+% measure'...
+
 fsc_mean_1nm = mean(FSC)/pixel_nm;
 
 % calculate SNR:  Huang, Xiaojing, et al. "Signal-to-noise and radiation exposure considerations in conventional and diffraction x-ray microscopy." Optics express 17.16 (2009): 13541-13553.
@@ -316,7 +345,9 @@ if param.dispfsc
             xlabel('Spatial frequency/Nyquist')
         case 'resolution'
             xaxis = [0:0.1:1];
-            ticks = 1./xaxis* param.pixel_size*1e9;
+            % As we want to use the full-period resolution
+            ticks = 2./xaxis* param.pixel_size*1e9;
+%             ticks = 1./xaxis* param.pixel_size*1e9;
             for i = 1:length(ticks)
                 order = floor(log10(ticks(i)))-1;
                 tick = round(ticks(i)/10^order)*10^order;
@@ -326,7 +357,8 @@ if param.dispfsc
                 XTickLabel{i} = tick;
             end
             set(gca,'XTickLabel',XTickLabel);
-            xlabel(gca, ['Half-period resolution [nm]'])
+            xlabel(gca, ['Full-period resolution [nm]']);
+%             xlabel(gca, ['Half-period resolution [nm]'])
     end
     if param.windowautopos
         win_size = [800 600]; 

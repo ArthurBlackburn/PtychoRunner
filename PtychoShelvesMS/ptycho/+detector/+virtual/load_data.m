@@ -128,7 +128,7 @@ function [ p ] = load_data( p )
 
     if get_option(p, 'fourier_ptycho')
         warning('FIXME')
-        keyboard
+        utils.keyboard_m(utils.verbose())
         p = fourier_ptycho_data(p);
     end
 

@@ -158,7 +158,7 @@ if isfield(p.getReport, 'crashed') && p.getReport.crashed
             end
         end
         if isfield(p.queue, 'remote_recons') && p.queue.remote_recons
-            keyboard
+            utils.keyboard_m(utils.verbose())
         end
         
     end

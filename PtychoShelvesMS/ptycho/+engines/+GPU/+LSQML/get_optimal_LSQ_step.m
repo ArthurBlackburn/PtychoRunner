@@ -43,7 +43,7 @@ if use_gpu
         
     else
         warning('Checkme, untested option')
-        keyboard        
+        utils.keyboard_m(utils.verbose())        
     end
     try
         [AA, Atb] = get_LSQ_step_mex(chi,dO,dP,O,P,lambda_0, uint8(p_ind)); 

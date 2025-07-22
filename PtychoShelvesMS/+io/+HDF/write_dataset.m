@@ -310,7 +310,7 @@ if comp && ~iscell(data) && ~ischar(data) && write_data || extend_dim || extenda
                 error('Could not create dataset %s! Try a different name or overwrite the already existing file.', data_name);
             end
         else
-            keyboard
+            utils.keyboard_m(utils.verbose())
             error('Dataset %s already exists! Try a different name or overwrite the already existing file.', data_name);
         end
     end

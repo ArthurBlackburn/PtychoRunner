@@ -128,7 +128,7 @@ function [self, cache] = gradient_NF_propagation_solver(self,psi,chi, cache, ind
 % 
 %     end
 %     catch
-%         keyboard
+%         utils.keyboard_m(utils.verbose())
 %     end
     
     

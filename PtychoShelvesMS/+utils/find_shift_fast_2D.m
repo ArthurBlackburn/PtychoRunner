@@ -143,7 +143,7 @@ function shift = find_shift_fast_2D(o1, o2, sigma, apply_fft, method)
     end
     
     if any(isnan(gather(shift)))
-        keyboard
+        utils.keyboard_m(utils.verbose())
     end
         
 end

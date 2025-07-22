@@ -16,7 +16,7 @@
 % Source Code
 % 
 % Introduction 
-% ‚Ä¢	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
+% ï	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
 %   will grant you (hereafter "LICENSEE") a royalty-free, non-exclusive license for academic, non-commercial purposes only (hereafter "LICENSE") to use the cSAXS 
 %   ptychography MATLAB package computer software program and associated documentation furnished hereunder (hereafter "PROGRAM").
 % 
@@ -25,7 +25,7 @@
 %       hereinafter set out and until termination of this license as set forth below.
 % 2.	LICENSEE acknowledges that the PROGRAM is a research tool still in the development stage. The PROGRAM is provided without any related services, improvements 
 %       or warranties from LICENSOR and that the LICENSE is entered into in order to enable others to utilize the PROGRAM in their academic activities. It is the 
-%       LICENSEE‚Äôs responsibility to ensure its proper use and the correctness of the results.‚Äù
+%       LICENSEEís responsibility to ensure its proper use and the correctness of the results.î
 % 3.	THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
 %       A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. IN NO EVENT SHALL THE LICENSOR, THE AUTHORS OR THE COPYRIGHT 
 %       HOLDERS BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE 
@@ -41,36 +41,46 @@
 %       Scherrer Institut, Switzerland."
 % 
 % Additionally, any publication using the package, or any translation of the code into another computing language should cite for difference map:
-% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379‚Äì382 (2008). 
+% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379ñ382 (2008). 
 %   (doi: 10.1126/science.1158573),
 % for mixed coherent modes:
-% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68‚Äì71 (2013). (doi: 10.1038/nature11806),
+% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68ñ71 (2013). (doi: 10.1038/nature11806),
 % for LSQ-ML method 
 % M. Odstrcil, A. Menzel, M.G. Sicairos,  Iterative least-squares solver for generalized maximum-likelihood ptychography, Optics Express, 2018
 % for OPRP method 
 %  M. Odstrcil, P. Baksh, S. A. Boden, R. Card, J. E. Chad, J. G. Frey, W. S. Brocklesby,  "Ptychographic coherent diffractive imaging with orthogonal probe relaxation." Optics express 24.8 (2016): 8360-8369
 % and/or for multislice:
-% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089‚Äì29108 (2016). 
+% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089ñ29108 (2016). 
 % 6.	Except for the above-mentioned acknowledgment, LICENSEE shall not use the PROGRAM title or the names or logos of LICENSOR, nor any adaptation thereof, nor the 
 %       names of any of its employees or laboratories, in any advertising, promotional or sales material without prior written consent obtained from LICENSOR in each case.
 % 7.	Ownership of all rights, including copyright in the PROGRAM and in any material associated therewith, shall at all times remain with LICENSOR, and LICENSEE 
 %       agrees to preserve same. LICENSEE agrees not to use any portion of the PROGRAM or of any IMPROVEMENTS in any machine-readable form outside the PROGRAM, nor to 
 %       make any copies except for its internal use, without prior written consent of LICENSOR. LICENSEE agrees to place the following copyright notice on any such copies: 
-%       ¬© All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
+%       © All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
 % 8.	The LICENSE shall not be construed to confer any rights upon LICENSEE by implication or otherwise except as specifically set forth herein.
 % 9.	DISCLAIMER: LICENSEE shall be aware that Phase Focus Limited of Sheffield, UK has an international portfolio of patents and pending applications which relate 
 %       to ptychography and that the PROGRAM may be capable of being used in circumstances which may fall within the claims of one or more of the Phase Focus patents, 
 %       in particular of patent with international application number PCT/GB2005/001464. The LICENSOR explicitly declares not to indemnify the users of the software 
 %       in case Phase Focus or any other third party will open a legal action against the LICENSEE due to the use of the program.
 % 10.	This Agreement shall be governed by the material laws of Switzerland and any dispute arising out of this Agreement or use of the PROGRAM shall be brought before 
-%       the courts of Z√ºrich, Switzerland. 
+%       the courts of Z¸rich, Switzerland. 
 % 
 
 
 function self = regulation_multilayers(self, par, cache)
     import engines.GPU.GPU_wrapper.*
     
-    Obj_size_limit = 100 ; % object size limit in MB, if larger, use CPU instead of GPU by ZC
+%     Obj_size_limit = 100 ; % object size limit in MB, if larger, use CPU instead of GPU by ZC
+%     Obj_size_limit = 4096 ; % object size limit in MB, if larger, use CPU instead of GPU by ZC - Mod by AB to speed up
+    Obj_size_limit = 1024 ; % object size limit in MB, if larger, use CPU instead of GPU by ZC - Mod by AB to speed up
+    % With our MoS2 set, 45 by 45, 1024sq patterns, 8 layers, 20 GB of
+    % memory is used. leaving about 12 GB on GPU. Obj size of about 4000 by
+    %  4000, 8 slices, takes about 2Gb. code below uses 4 times on GPU (see
+    %  whos GPU) which causes a memory crash. Thus 1GB obj size seems safe.
+    %  2 gb should be safe but is not in reality... 
+    % *2^20 to get to bytes. divide by 8 as complex single has 8 bytes per
+    % point. eg. 4096(im size) x 4096(im size) x 32(layers) * 8(byte per
+    % single) / 2^20 = 4096
     Obj_size_limit = Obj_size_limit / 8 * 2^20 ;
 
     Npix = [self.Np_o, par.Nlayers ]; % -1, Not last inf layer, by Zhen Chen

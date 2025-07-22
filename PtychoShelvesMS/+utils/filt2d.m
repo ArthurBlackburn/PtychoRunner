@@ -226,7 +226,7 @@ else
                     if floor((unmodsize(2)-1)/2)>0
                         out(:,1:floor((unmodsize(2)-1)/2)) = 1;
                     end
-%                     keyboard
+%                     utils.keyboard_m(utils.verbose())
                     out(:,floor((unmodsize(2)-1)/2) + outputdim(2)+3-unmodsize(2):length(N1)) = 1;
                     % Row modulation
                     out2 = (0.54+0.46*cos(2*pi*(Nr-floor((unmodsize(1)-1)/2))/(outputdim(1)-unmodsize(1))));

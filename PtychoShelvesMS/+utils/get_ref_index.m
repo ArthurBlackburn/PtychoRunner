@@ -99,7 +99,7 @@ end
 server = 'http://henke.lbl.gov/';
 req = sprintf('Material=Enter+Formula&Formula=%s&Density=%f&Scan=Energy&Min=%d&Max=%d&Npts=%d&Output=Text+File', formula, dens, emin, emax, npts);
 data_req = webwrite([server 'cgi-bin/getdb.pl'], req);
-%keyboard
+%utils.keyboard_m(utils.verbose())
 % find and read dat file
 f_pos = strfind(data_req, '/tmp');
 data_req = strsplit(data_req(f_pos(1):end), '.');

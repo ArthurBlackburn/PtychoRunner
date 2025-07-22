@@ -155,7 +155,7 @@ function [self, probe, obj_proj, psi] = get_forward_model(self, obj_proj, par, c
             % debug by Zhen Chen
 %         temp=gather(psi{1});
 %         if any(isnan(temp(:))) || any(temp(:)> 1e3)
-%             keyboard;
+%             utils.keyboard_m(utils.verbose());
 %         end
         
 

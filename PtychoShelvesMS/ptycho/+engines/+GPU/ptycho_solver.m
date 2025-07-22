@@ -159,7 +159,7 @@ end
 global pprev;
 pprev = -1;
 
-mode_id = 1;  % main mode (assume single most important mode for approchimations) 
+mode_id = 1;  % main mode (assume single most important mode for approximations) 
 
 t0 = tic;
 t_start = tic;
@@ -169,6 +169,8 @@ for ll = 1:length(self.object)
     object_avg{ll} = 0; 
 end
 N_object_avg = 0;
+save_time = 0; % used to record the time that is spent saving data.
+
 %par.initial_probe_rescaling = true or false
 for iter =  (1-par.initial_probe_rescaling):par.number_iterations
     if iter > 0
@@ -272,11 +274,17 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
     if self.modes{1}.probe_scale_upd(end) > 0
         self.modes{1}.probe_scale_window = get_window(self.Np_p, 1+self.modes{1}.probe_scale_upd(end), 1) .* get_window(self.Np_p, 1+self.modes{1}.probe_scale_upd(end), 2); 
     elseif self.modes{1}.probe_scale_upd(end) < 0
-        self.modes{1}.probe_scale_window = fftshift(get_window(self.Np_p, 1-self.modes{1}.probe_scale_upd(end), 1) .* get_window(self.Np_p, 1-self.modes{1}.probe_scale_upd(end), 2)) ; 
+      % self.modes{1}.probe_scale_window = fftshift(get_window(self.Np_p, 1-self.modes{1}.probe_scale_upd(end), 1) .* get_window(self.Np_p, 1-self.modes{1}.probe_scale_upd(end), 2)) ; 
+            % A. B. @ UVic:
+            % Here there was an inconsistent application of fftshift -- inconsistent with how it was dealt with
+            % probe constraints. Dealt with it here to make it more consistent in my way of looking at it... 
+            % Otherwise case above would have no fftshift whereas this one would.
+        self.modes{1}.probe_scale_window = get_window(self.Np_p, 1-self.modes{1}.probe_scale_upd(end), 1) .* get_window(self.Np_p, 1-self.modes{1}.probe_scale_upd(end), 2) ; 
     else
         self.modes{1}.probe_scale_window = [];
     end    
    
+
     %% updated illumination
     if iter <= 1 || ( iter > par.probe_change_start && (mod(iter, 10) == 1 || iter < par.probe_change_start+10 ))
         aprobe2 = abs(self.probe{1}(:,:,1)).^2; 
@@ -303,7 +311,7 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
 %         for ll=1:par.Nlayers
 %             temp = abs(self.object{ll});
 %             if any(gather(temp(:))>10)
-%                 keyboard;
+%                 utils.keyboard_m(utils.verbose());
 %             end
 %             temp (temp> 10) =1;
 %             self.object{ll} = temp.* exp(1i* angle(self.object{ll}));
@@ -340,20 +348,33 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
 
     % apply probe constraints 
     if iter >= par.probe_change_start
-        if ~ (check_option(par.p,'probe_support_tem') && check_option(par.p,'probe_support_tem_Nend') && iter > par.p.probe_support_tem_Nend)  % quick implement for TEM aperture constrain by Zhen Chen, bugs for probe rescale.
-                    
-            % propagate probe on the detector 
-            probe_temp = fft2_safe(self.probe{1});  
-
-            if ~isempty(self.modes{1}.probe_support_fft)
-                probe_temp = probe_temp .* self.modes{1}.probe_support_fft;
-            end
-
-            % propagate probe back to the sample plane 
-            self.probe{1} = ifft2_safe(probe_temp);  
-        elseif ~ check_option(par.p,'probe_support_tem') % force not use near field propagation if probe_support_tem exists, by Zhen Chen
+%         
+%         if (check_option(par.p,'probe_support_apt_radius')) && ...
+%             par.p.probe_support_apt_radius > 0
+            % Force not use near field propagation
+            % (based on quick implement for TEM aperture constraint by Zhen
+            % Chen, bugs for probe rescale)
+            % No kidding it bugs. There were many things wrong around here
+            % which needed sorting. Arthur B.
+        if par.Nlayers > 1 && ( par.p.delta_z(end) == self.modes{mode_id}.distances)
+        % if the last layer distance in a multilayer case is just the mode propagation
+        % distance of the mode, then it must not have been set elsewhere to
+        % the be the actual 'propagation distance'. Here the propagation
+        % distance is assumed to be farfield, so that apply probe
+        % constraints properly calculates fft plane using forward_prop...
+        % etc.
+            
+            ini_distances = self.modes{mode_id}.distances;
+            self.modes{mode_id}.distances = Inf;        
+            self.probe{mode_id} = apply_probe_contraints(self.probe{mode_id}, self.modes{mode_id});
+            self.modes{mode_id}.distances = ini_distances;
+            
+        else 
             self.probe{mode_id} = apply_probe_contraints(self.probe{mode_id}, self.modes{mode_id});
         end
+        
+        % Note above could try to apply constraints on both probe plane and
+        % fft plane, which sounds kind of wrong in TEM system at least.
     end
   
     % push low illum regions of object to zero  
@@ -373,7 +394,7 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
     end
              
     
-    %% suppress uncontrained values !! 
+    %% suppress unconstrained values !! 
     if iter > par.object_change_start && par.object_regular(1) > 0
         for ll = 1:par.Nlayers % max(par.object_modes, par.Nscans)     % quick fix for multilayer, but bugs for multiple scans or modes, by Zhen Chen      
             self.object{ll} = apply_smoothness_constraint(self.object{ll},par.object_regular(1)); % blur only intensity, not phase 
@@ -381,6 +402,7 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
     end
     
 %     %% suppress large amplitude of object, quick try by Zhen Chen
+%{
     if iter >= par.object_change_start && par.Nlayers > 1   && iter < 100
         for ll=1:par.Nlayers
             temp = abs(self.object{ll});
@@ -388,6 +410,7 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
             self.object{ll} = temp.* exp(1i* angle(self.object{ll}));
         end
     end
+%}
 
 %% reverse amplitude larger than 1 , try by Zhen Chen
 %     if iter >= par.object_change_start && par.Nlayers > 1 && par.p.positivity_absorption_constraint
@@ -521,13 +544,14 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
         catch err
             warning(err.message)
             if verbose()  > 1
-                keyboard
+                utils.keyboard_m(utils.verbose())
             end
         end
    
     end
     %% save intermediate images, added by YJ
     if isfield(par,'save_results_every') && (mod(iter, par.save_results_every ) == 0 &&  par.save_results_every ~=0) || iter == par.number_iterations
+        tsave = tic;
          if ~exist(par.fout, 'dir')
             mkdir(par.fout);
          end
@@ -561,7 +585,7 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
         outputs.pixel_size = self.pixel_size;
         %outputs.probe_positions_0 = self.probe_positions_0;
         if iter == par.number_iterations
-            par.p.fmag = []; % delete large but not usefull params
+            par.p.fmag = []; % delete large but not useful params
             par.p.fmask = [];
             par.p.scanidxs=[];
             par.p.probes=[];
@@ -624,10 +648,12 @@ for iter =  (1-par.initial_probe_rescaling):par.number_iterations
                 imwrite(mat2gray(probe_mag)*64,parula,strcat(saveDir,saveName),'tiff')
             end
         end
+        save_time = save_time + toc(tsave);
     end
+    % above is end of save results every (and at end)...
     
 end
-
+    total_time = toc(t0);
     %% return results 
     if is_method(par, 'DM')
         % return average from last 10% iterations 
@@ -637,9 +663,10 @@ end
     end
 
 
-    iter_time = toc(t0) / par.number_iterations; 
+    iter_time = total_time / par.number_iterations; 
     verbose(1,' ====  Time per one iteration %3.3fs', iter_time)    
-    verbose(1,' ====  Total time %3.2fs', toc(t0))    
+    verbose(1,' ====  Total time %3.2fs', total_time)
+
 
     
     % clip outliers from the low illum regions 
@@ -674,7 +701,7 @@ end
     % avoid duplication in memory 
     self.noise = [];
     self.diffraction= [];
-    self.mask = [];
+%     self.mask = [];
     
     % store useful parameters back to the main structure only for the 1st mode 
     outputs.relative_pixel_scale = self.modes{1}.scales(end,:);
@@ -682,10 +709,12 @@ end
     outputs.shear =   self.modes{1}.shear(end,:);
     outputs.z_distance = self.modes{1}.distances(end,:);
     outputs.shift_scans = self.modes{1}.shift_scans;
-    outputs.probe_fourier_shift = self.modes{1}.probe_fourier_shift; 
+    outputs.probe_fourier_shift = self.modes{1}.probe_fourier_shift;
+    outputs.probe_positions_0 = self.modes{1}.probe_positions_0;
     outputs.probe_positions = self.modes{1}.probe_positions;
     outputs.detector_rotation = self.modes{1}.probe_rotation(end,:);
     outputs.detector_scale = 1+self.modes{1}.probe_scale_upd(end);
+    outputs.computation_time = total_time - save_time;
 
     if strcmp(par.likelihood, 'poisson')
         fourier_error = fourier_error- fourier_error(1,:);
@@ -696,13 +725,15 @@ end
     outputs.illum_sum = cache.illum_sum_0; 
 
     outputs.diffraction = [];
-    outputs.noise = [];
-    outputs.mask = [];
+%     outputs.noise = [];
+%     outputs.mask = [];
+    outputs.mask = self.mask;
 
     %% move everything back to RAM from GPU 
     if par.use_gpu
         outputs =  move_from_gpu(outputs);
     end
+
     
     %% report results
     try

@@ -380,7 +380,7 @@ if ~isempty(ml_class_group)
                     data.Value(group_ind) = data_temp.(fn{group_ind});
                     
                 otherwise
-                    keyboard
+                    utils.keyboard_m(utils.verbose())
             end
         end
     else
@@ -394,7 +394,7 @@ if ~isempty(ml_class_group)
                     data(group_ind) = data_temp.(fn{group_ind});
                     
                 otherwise
-                    keyboard
+                    utils.keyboard_m(utils.verbose())
             end
         end
     end
@@ -530,7 +530,7 @@ if ~isempty(links)
                                             target_add = sprintf('(%d)', pnt_indx+1);
                                             
                                         otherwise
-                                            keyboard
+                                            utils.keyboard_m(utils.verbose())
                                     end
                                     target = [strrep(parent, '/', '.') target_struc target_add];
                                     break

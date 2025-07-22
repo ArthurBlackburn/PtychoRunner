@@ -26,32 +26,52 @@ utils.verbose(2, 'Loading raw data of scan %05d.', p.scan_number(p.scanID))
 
 files = detStorage.files;
 [~,~,ext]=fileparts(files{p.scanID});
+ismask = false;
 switch lower(ext)
     case '.hdf5'
         data = h5read(files{p.scanID},'/dp');
     case '.mat'  % add .mat format by Zhen Chen
-        data=load(files{p.scanID},'dp');
-        data=data.dp;
+        % added by ABlackburn to allow mask file to be embedeed in data if required.
+        data=load(files{p.scanID});
+        if isfield(data,'mask')
+            mask = ~data.mask;
+            ismask = true;
+        end
+        % data=load(files{p.scanID},'dp');
+        data=double(data.dp);
     otherwise
         error('data format not supported!');
 end
 data = squeeze(data);
-utils.verbose(2, strcat('Loaded data from:', files{p.scanID}))
+utils.verbose(2, 'Loaded data from: %s', files{p.scanID});
 
 if det.params.orientation(1)
     utils.verbose(2, 'Transposing diffraction patterns')
     data = permute(data, [2 1 3]);
+    if ismask
+        mask = permute(mask, [2 1 3]);
+    end
 end
+
 if det.params.orientation(2) && det.params.orientation(3)
     utils.verbose(2, 'Flipping diffraction patterns')
 
-    data = rot90(data,2);  % merge the fliplr and flipup operations 
+    data = rot90(data,2);  % merge the fliplr and flipup operations
+    if ismask
+        mask = rot90(mask,2);
+    end
 else
     if det.params.orientation(2)
         data = fliplr(data);
+        if ismask
+            mask = fliplr(mask);
+        end
     end
     if det.params.orientation(3)
         data = flipud(data);
+        if ismask
+            mask = flipud(mask);
+        end
     end
 end
 
@@ -176,4 +196,9 @@ end
 %}
 
 detStorage.data = data;
+
+if ismask
+    detStorage.mask = mask;
+end
+
 end

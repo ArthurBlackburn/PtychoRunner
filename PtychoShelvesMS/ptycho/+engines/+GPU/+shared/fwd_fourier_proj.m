@@ -99,7 +99,7 @@ function [Psi] = fwd_fourier_proj(Psi, mode, ind)
     catch err
         if utils.verbose()> 0
             warning(err.message)
-            keyboard
+            utils.keyboard_m(utils.verbose())
         else
             rethrow(err)
         end

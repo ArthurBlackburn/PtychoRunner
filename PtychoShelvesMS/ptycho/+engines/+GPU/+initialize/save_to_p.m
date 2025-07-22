@@ -18,7 +18,7 @@
 % Source Code
 %
 % Introduction 
-% ‚Ä¢	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
+% ï	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
 %   will grant you (hereafter "LICENSEE") a royalty-free, non-exclusive license for academic, non-commercial purposes only (hereafter "LICENSE") to use the cSAXS 
 %   ptychography MATLAB package computer software program and associated documentation furnished hereunder (hereafter "PROGRAM").
 %
@@ -27,7 +27,7 @@
 %       hereinafter set out and until termination of this license as set forth below.
 % 2.	LICENSEE acknowledges that the PROGRAM is a research tool still in the development stage. The PROGRAM is provided without any related services, improvements 
 %       or warranties from LICENSOR and that the LICENSE is entered into in order to enable others to utilize the PROGRAM in their academic activities. It is the 
-%       LICENSEE‚Äôs responsibility to ensure its proper use and the correctness of the results.‚Äù
+%       LICENSEEís responsibility to ensure its proper use and the correctness of the results.î
 % 3.	THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
 %       A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. IN NO EVENT SHALL THE LICENSOR, THE AUTHORS OR THE COPYRIGHT 
 %       HOLDERS BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE 
@@ -43,29 +43,29 @@
 %       Scherrer Institut, Switzerland."
 %
 % Additionally, any publication using the package, or any translation of the code into another computing language should cite for difference map:
-% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379‚Äì382 (2008). 
+% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379ñ382 (2008). 
 %   (doi: 10.1126/science.1158573),
 % for mixed coherent modes:
-% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68‚Äì71 (2013). (doi: 10.1038/nature11806),
+% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68ñ71 (2013). (doi: 10.1038/nature11806),
 % for LSQ-ML method 
 % M. Odstrcil, A. Menzel, M.G. Sicairos,  Iterative least-squares solver for generalized maximum-likelihood ptychography, Optics Express, 2018
 % for OPRP method 
 %  M. Odstrcil, P. Baksh, S. A. Boden, R. Card, J. E. Chad, J. G. Frey, W. S. Brocklesby,  "Ptychographic coherent diffractive imaging with orthogonal probe relaxation." Optics express 24.8 (2016): 8360-8369
 % and/or for multislice:
-% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089‚Äì29108 (2016). 
+% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089ñ29108 (2016). 
 % 6.	Except for the above-mentioned acknowledgment, LICENSEE shall not use the PROGRAM title or the names or logos of LICENSOR, nor any adaptation thereof, nor the 
 %       names of any of its employees or laboratories, in any advertising, promotional or sales material without prior written consent obtained from LICENSOR in each case.
 % 7.	Ownership of all rights, including copyright in the PROGRAM and in any material associated therewith, shall at all times remain with LICENSOR, and LICENSEE 
 %       agrees to preserve same. LICENSEE agrees not to use any portion of the PROGRAM or of any IMPROVEMENTS in any machine-readable form outside the PROGRAM, nor to 
 %       make any copies except for its internal use, without prior written consent of LICENSOR. LICENSEE agrees to place the following copyright notice on any such copies: 
-%       ¬© All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
+%       © All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
 % 8.	The LICENSE shall not be construed to confer any rights upon LICENSEE by implication or otherwise except as specifically set forth herein.
 % 9.	DISCLAIMER: LICENSEE shall be aware that Phase Focus Limited of Sheffield, UK has an international portfolio of patents and pending applications which relate 
 %       to ptychography and that the PROGRAM may be capable of being used in circumstances which may fall within the claims of one or more of the Phase Focus patents, 
 %       in particular of patent with international application number PCT/GB2005/001464. The LICENSOR explicitly declares not to indemnify the users of the software 
 %       in case Phase Focus or any other third party will open a legal action against the LICENSEE due to the use of the program.
 % 10.	This Agreement shall be governed by the material laws of Switzerland and any dispute arising out of this Agreement or use of the PROGRAM shall be brought before 
-%       the courts of Z√ºrich, Switzerland. 
+%       the courts of Z¸rich, Switzerland. 
 
 
 function p_out = save_to_p(self, param, p, fourier_error)
@@ -116,7 +116,7 @@ function p_out = save_to_p(self, param, p, fourier_error)
     p_out.object = cell(1,p_out.numobjs);
     for i = 1:p_out.numobjs
         obj_size = p.object_size(min(end,p.share_object_ID(i)),:); 
-        p_out.object{i} = single([]); 
+        p_out.object{i} = single([]);
         for layer = 1:param.Nlayers
             p_out.object{i}(:,:,1,layer) = imshift_fast(self.object{i,layer}, -1,-1, obj_size, 'nearest', mean(self.object{i,layer}(:)));
         end
@@ -155,8 +155,12 @@ function p_out = save_to_p(self, param, p, fourier_error)
     end
  
 
-    % save additional reconstructed parameters  
-    for item = {'background', 'intensity_corr', 'probe_fourier_shift' }
+    % save additional reconstructed parameters 
+    % (A.B. : Added more fields than in ZC version) 
+    for item = {'background', 'intensity_corr', 'probe_fourier_shift', ...
+            'rotation','shear','scale','relative_pixel_scale',...
+            'pixel_size', 'affine_matrix', 'z_distance', 'diff_pattern_blur', 'probe_evolution',  ...
+            'shift_scans', 'detector_rotation', 'detector_scale', 'illum_sum','mask','computation_time'}
         try
             p_out.(item{1}) = self.(item{1});
         end

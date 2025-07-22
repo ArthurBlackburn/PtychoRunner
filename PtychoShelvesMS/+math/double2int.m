@@ -72,7 +72,7 @@ for ii=1:length(fn)
                 p = setfield(p,grps{:}, int32(data_val));
             end
         catch
-            keyboard
+            utils.keyboard_m(utils.verbose())
         end
     end
         

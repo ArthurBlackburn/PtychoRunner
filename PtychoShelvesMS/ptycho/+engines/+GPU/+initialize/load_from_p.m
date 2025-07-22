@@ -18,7 +18,7 @@
 % Source Code
 %
 % Introduction 
-% â€¢	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
+% •	This license agreement sets forth the terms and conditions under which the PAUL SCHERRER INSTITUT (PSI), CH-5232 Villigen-PSI, Switzerland (hereafter "LICENSOR") 
 %   will grant you (hereafter "LICENSEE") a royalty-free, non-exclusive license for academic, non-commercial purposes only (hereafter "LICENSE") to use the cSAXS 
 %   ptychography MATLAB package computer software program and associated documentation furnished hereunder (hereafter "PROGRAM").
 %
@@ -27,7 +27,7 @@
 %       hereinafter set out and until termination of this license as set forth below.
 % 2.	LICENSEE acknowledges that the PROGRAM is a research tool still in the development stage. The PROGRAM is provided without any related services, improvements 
 %       or warranties from LICENSOR and that the LICENSE is entered into in order to enable others to utilize the PROGRAM in their academic activities. It is the 
-%       LICENSEEâ€™s responsibility to ensure its proper use and the correctness of the results.â€
+%       LICENSEE’s responsibility to ensure its proper use and the correctness of the results.”
 % 3.	THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
 %       A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. IN NO EVENT SHALL THE LICENSOR, THE AUTHORS OR THE COPYRIGHT 
 %       HOLDERS BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE 
@@ -43,29 +43,29 @@
 %       Scherrer Institut, Switzerland."
 %
 % Additionally, any publication using the package, or any translation of the code into another computing language should cite for difference map:
-% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379â€“382 (2008). 
+% P. Thibault, M. Dierolf, A. Menzel, O. Bunk, C. David, F. Pfeiffer, High-resolution scanning X-ray diffraction microscopy, Science 321, 379–382 (2008). 
 %   (doi: 10.1126/science.1158573),
 % for mixed coherent modes:
-% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68â€“71 (2013). (doi: 10.1038/nature11806),
+% P. Thibault and A. Menzel, Reconstructing state mixtures from diffraction measurements, Nature 494, 68–71 (2013). (doi: 10.1038/nature11806),
 % for LSQ-ML method 
 % M. Odstrcil, A. Menzel, M.G. Sicairos,  Iterative least-squares solver for generalized maximum-likelihood ptychography, Optics Express, 2018
 % for OPRP method 
 %  M. Odstrcil, P. Baksh, S. A. Boden, R. Card, J. E. Chad, J. G. Frey, W. S. Brocklesby,  "Ptychographic coherent diffractive imaging with orthogonal probe relaxation." Optics express 24.8 (2016): 8360-8369
 % and/or for multislice:
-% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089â€“29108 (2016). 
+% E. H. R. Tsai, I. Usov, A. Diaz, A. Menzel, and M. Guizar-Sicairos, X-ray ptychography with extended depth of field, Opt. Express 24, 29089–29108 (2016). 
 % 6.	Except for the above-mentioned acknowledgment, LICENSEE shall not use the PROGRAM title or the names or logos of LICENSOR, nor any adaptation thereof, nor the 
 %       names of any of its employees or laboratories, in any advertising, promotional or sales material without prior written consent obtained from LICENSOR in each case.
 % 7.	Ownership of all rights, including copyright in the PROGRAM and in any material associated therewith, shall at all times remain with LICENSOR, and LICENSEE 
 %       agrees to preserve same. LICENSEE agrees not to use any portion of the PROGRAM or of any IMPROVEMENTS in any machine-readable form outside the PROGRAM, nor to 
 %       make any copies except for its internal use, without prior written consent of LICENSOR. LICENSEE agrees to place the following copyright notice on any such copies: 
-%       Â© All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
+%       © All rights reserved. PAUL SCHERRER INSTITUT, Switzerland, Laboratory for Macromolecules and Bioimaging, 2017. 
 % 8.	The LICENSE shall not be construed to confer any rights upon LICENSEE by implication or otherwise except as specifically set forth herein.
 % 9.	DISCLAIMER: LICENSEE shall be aware that Phase Focus Limited of Sheffield, UK has an international portfolio of patents and pending applications which relate 
 %       to ptychography and that the PROGRAM may be capable of being used in circumstances which may fall within the claims of one or more of the Phase Focus patents, 
 %       in particular of patent with international application number PCT/GB2005/001464. The LICENSOR explicitly declares not to indemnify the users of the software 
 %       in case Phase Focus or any other third party will open a legal action against the LICENSEE due to the use of the program.
 % 10.	This Agreement shall be governed by the material laws of Switzerland and any dispute arising out of this Agreement or use of the PROGRAM shall be brought before 
-%       the courts of ZÃ¼rich, Switzerland. 
+%       the courts of Zürich, Switzerland. 
 
 
 
@@ -229,7 +229,7 @@ function [self, param, p] = load_from_p(param, p)
     end
    
     % estimate of the probe support in detector plane 
-    if check_option(p,'probe_support_fft') &&  ~check_option(p, 'prop_regime', 'nearfield') && ~check_option(p,'probe_support_tem') % exclude TEM aperture mask by Zhen Chen
+    if check_option(p,'probe_support_fft') &&  ~check_option(p, 'prop_regime', 'nearfield') && ~check_option(p,'probe_support_apt_radius') % exclude TEM aperture mask by Zhen Chen
         if ~check_option(p.model, 'probe_focal_length') && ~check_option(p.model, 'probe_outer_zone_width')
             error('Missing  model.probe_focal_length and model.probe_outer_zone_width of Fresnel zone plate' )
         end        
@@ -245,12 +245,17 @@ function [self, param, p] = load_from_p(param, p)
         [cx, cy] = center(max(0,af_probe-0.1*max(af_probe(:)))); 
         self.probe_support_fft = imshift_fast(self.probe_support_fft, -cx, -cy,[], 'nearest'); 
         self.probe_support_fft = max(0, min(1, self.probe_support_fft)); 
-        verbose(1, 'Using farfield probe support constraint')
-    elseif check_option(p,'probe_support_tem')  % TEM aperture mask by Zhen Chen
-        mask_dp=abs(fft2(p.probe_initial));
-        mask_dp(mask_dp>1.0)=1;
-        mask_dp(mask_dp<0.1)=0;
-        self.probe_support_fft = logical(mask_dp);
+        verbose(1, 'Using farfield probe support constraint');
+        % Added by Arthur : define a circular aperture radius here.
+    elseif check_option(p,'probe_support_apt_radius') && ~isempty(p.probe_support_apt_radius) && p.probe_support_apt_radius < sqrt(2) % 
+        if p.probe_support_apt_radius <= 0
+            verbose(1, 'Requested TEM probe support radius on FFT of probe was not greater than 0, so was not applied');
+        else
+            [X,Y] = meshgrid((-p.asize(2)/2+1:p.asize(2)/2)/p.asize(2), ...
+                             (-p.asize(1)/2+1:p.asize(1)/2)/p.asize(1) );
+            self.probe_support_fft = sqrt(X.^2+Y.^2) < p.probe_support_apt_radius/2;             
+            verbose(1, 'Using a fixed circular mask of radius %3.3f nommalized to max possible radius of FFT plane', p.probe_support_apt_radius);
+        end
     else
         self.probe_support_fft = []; 
     end
@@ -468,7 +473,13 @@ function [self, param, p] = load_from_p(param, p)
     end
     
     self.lambda = p.lambda;
-    self.diff_pattern_blur = 0;  % incoherent smoothing 
+    % previously in ZC code this was fixed at zero. Made variable here to allow investigation.
+    if isfield(p,'diff_pattern_blur')
+        self.diff_pattern_blur = 0;  % incoherent smoothing % AB. Was initially set to zero. 
+    else
+        self.diff_pattern_blur = p.diff_pattern_blur;
+    end
+    
     self.modes = []; 
     
          

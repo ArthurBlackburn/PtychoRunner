@@ -188,7 +188,7 @@ function [self, cache] = add_momentum_object(self, cache, par, object_upd_sum, i
                drawnow 
            end
         catch
-            keyboard
+            utils.keyboard_m(utils.verbose())
         end
 
    end

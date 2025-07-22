@@ -188,7 +188,7 @@ function [pos_update, probe_rotation,probe_scale,cache] = gradient_position_solv
 % 
 %     end
 %     catch
-%         keyboard
+%         utils.keyboard_m(utils.verbose())
 %     end
     if any(ind==1)
         verbose(1,'Grad pos corr -- AVG step  %3.3g px , acceleration = %4.1f', max(abs(pos_update(:))), ACC)

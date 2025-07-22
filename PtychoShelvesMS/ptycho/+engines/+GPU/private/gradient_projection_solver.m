@@ -122,7 +122,7 @@ function [beta_p, beta_o] =  gradient_projection_solver(self,xi,O,P,dO,dP,p_ind,
 
 
 %     if any(isnan(beta_o)) || any(isnan(beta_p))
-%         keyboard
+%         utils.keyboard_m(utils.verbose())
 %         error('Convergence failed')
 %     end
 

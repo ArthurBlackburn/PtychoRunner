@@ -208,7 +208,12 @@ else
     if ~all([size(probe,1) size(probe,2)] == asize)
         verbose(2,'Loaded probe has the wrong size.');
         verbose(2,'Interpolating probe in file %s, from (%d,%d) to (%d,%d).', p.initial_probe_file,size(probe,1),size(probe,2),asize(1),asize(2));
-        probe = interpolateFT(probe,asize);
+        % Originally below was used:
+%         probe = interpolateFT(probe,asize);
+        % The below has reduced scaling related artefacts: 
+        prb_scale = asize ./ size(probe,[1 2]); 
+        probe = interpolateFT_addnoise(probe, asize, 1)./prod(prb_scale);
+        
     end
     if ~isempty(p.probe_file_propagation) && any(p.probe_file_propagation ~= 0)
         verbose(2,'Propagating probe from file by %f mm',p.probe_file_propagation*1e3);
@@ -221,3 +226,27 @@ end
 
 pout = p;
 pout.probe_initial = probe;
+end
+
+function [ imout ] = interpolateFT_addnoise(im,outsize, noise_amplitude)
+    % Fill the empty regions in the FFT interpolated data by some weak
+    % random noise 
+    import math.fftshift_2D
+    import math.ifftshift_2D
+    import utils.crop_pad
+
+
+    Nout = outsize;
+    Nin = size(im);
+
+    imFT = fftshift_2D(fft2(im));
+
+    imout = crop_pad(imFT, outsize);
+
+    % add noise to avoid correlation between upsampled imaged from
+    % interpolation artefacts 
+    imout = imout + noise_amplitude * randn(outsize).*mean(min(abs(imFT))); 
+    imout = ifft2(ifftshift_2D(imout))*(Nout(1)*Nout(2)/(Nin(1)*Nin(2)));
+
+
+end

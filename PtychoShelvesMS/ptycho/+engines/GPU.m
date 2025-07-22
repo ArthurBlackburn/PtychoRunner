@@ -139,8 +139,9 @@ function [p_out, fdb] = GPU(p)
                         end
                         verbose(-1,'Return back to queue')
                         required_mem = required_mem .* 1.2; % assume that the required memory was too low, -> increase 
-%                         keyboard;
+%                       utils.keyboard_m(utils.verbose());
                         continue
+
                     else
                         rethrow(ME)
                     end
@@ -174,7 +175,7 @@ function [p_out, fdb] = GPU(p)
             rethrow(ME)
         else
             fprintf('verbose %i', verbose)
-           keyboard 
+           utils.keyboard_m(utils.verbose()) 
         end
     end    
     
@@ -189,7 +190,7 @@ function [p_out, fdb] = GPU(p)
     %% upscale outputs  back if needed and update valued in "self" structure
 
     out.diffraction = self.diffraction; 
-    out.mask = self.mask; 
+%     out.mask = self.mask; 
 
     out = initialize.rescale_inputs(out, p.asize, false);
 
