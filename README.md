@@ -25,9 +25,9 @@ To illustrate the above, and reproduce the key results of the manuscript, exampl
 2. Creates the ptychographic reconstructions given in the manuscript, specifically using:  
    1. Gold (Au) particles on thin amorphous carbon (aC) experimental diffraction data. 
    2. Two subsets of the Au particles on aC experimental data. These sets have a reduced sampling density (over the image plane), that the above source dataset, but have larger lateral span in the image plane.
-   3. Gold island on few layer MoS2 experimental data.
+   3. Gold island on few layer MoS<sub>2</sub> experimental data.
    4. Various synthetic datasets used to create Extended Data Figure 8 in the related manuscript.
-   5. Simulated diffraction data produced from a hexagonal frustrum gold island on 5 layers of MoS2, where the entire system is tilted slightly to best match our experimentally determined tilt angle.
+   5. Simulated diffraction data produced from a hexagonal frustrum gold island on 5 layers of MoS<sub>2</sub>, where the entire system is tilted slightly to best match our experimentally determined tilt angle.
 3. Perform a fit of the reconstructed Au on aC data to model polycrystalline Au diffraction data and perform a subsequent distortion-correction of the diffraction data. Note: Interested readers may also want to investigate our more recent code and related publications for correcting diffracted data, that does not require model fitting [https://github.com/mrfitzpa/emicroml].
 4. Determine the Fourier Ring Correlation (FRC) characteristic between the Au on aC reconstructions, using the method described in manuscript.
 5. Determine the Spectral Signal to Noise Ratio (SSNR) and Phase Contrast Transfer Function (PCTF) of the reconstructed simulated datasets, as also given in Extended Data Figure 8 in the related manuscript.
@@ -92,7 +92,7 @@ This script demonstrates the pre-processing of the 'raw' data obtained in HDF5 f
 - Opens the raw data
 - Recentres it, using either manual selection of the direct beam, or using some ‘automatic’ options such as centre of mass.
 - Forms subsets of the collected diffraction data. Two types of subsets are formed: one where the number of diffraction sampling points is reduced, but the sampling density on the image plane remains the same; and another where the number of diffraction sampling points and the sampling density are both halved.
-- Shows how distortion correction is applied to the MoS2 diffraction data set. This uses distortion coefficients determined from `Part_3_DistortionFit_and_Correct.m` (see 2.1.3), which determines the distortion present in the Au particles in amorphous carbon data.
+- Shows how distortion correction is applied to the MoS<sub>2</sub> diffraction data set. This uses distortion coefficients determined from `Part_3_DistortionFit_and_Correct.m` (see 2.1.3), which determines the distortion present in the Au particles in amorphous carbon data.
 
 #### 2.1.2 Create of Reconstructions (Part_1and2_Reconstructions.m)
 
@@ -103,13 +103,13 @@ The script contains code blocks that call the `RunReconF` function. This functio
 Blocks are provided to initiate runs for the key reconstructions, specifically the blocks provide reconstructions of:
 
 1. Synthetic data, providing a quick test run to see if things are working okay. This test run should take 1 - 2 minutes, or less, to run and requires < 2 GB of GPU memory.
-2. Synthetic data at conditions very similar to those used in Au on MoS2 reconstruction.
+2. Synthetic data at conditions very similar to those used in Au on MoS<sub>2</sub> reconstruction.
 3. Synthetic data at conditions very similar to those used in the Au on amorphous carbon (aC) reconstruction.
 4. Experimental data from Au on Amorphous carbon (aC) - with no distortion correction.
 5. Experimental data from Au on Amorphous carbon (aC) - after first round of distortion correction.
 6. Experimental data from Au on Amorphous carbon (aC) - after second (and final) round of distortion correction.
-7. Experimental data from Gold Islands on MoS2 (using distortion corrected data)
-8. Simulated from a hexagonal frustrum gold island on 5 layers of MoS2, where the entire system is tilted slightly to best match our experimentally determined tilt angle.
+7. Experimental data from Gold Islands on MoS<sub>2</sub> (using distortion corrected data)
+8. Simulated from a hexagonal frustrum gold island on 5 layers of MoS<sub>2</sub>, where the entire system is tilted slightly to best match our experimentally determined tilt angle.
 
 Some of these blocks will need to be un-commented in the Matlab file in order to be active and run. Furthermore, the blocks and parameters might need to be adjusted for your architecture. The first 'quick test' block, requires 1 GPU, whereas the next block require a computer with 3 GPUs (or 3 virtual GPUs on the system), in order to run 3 reconstructions in parallel.
 
@@ -153,5 +153,5 @@ The source data and key reconstructions produced from the codes provided are ava
 1. Blackburn, A. M., Cordoba, C., Fitzpatrick, M. R. C. and Mcleod, R. A., 2025,  Sub-ångström resolution ptychography in a scanning electron microscope at 20 keV, Submitted, Under Review.
 2. Chen, Z., Jiang, Y., Shao, Y.-T., Holtz, M. E., Odstrčil, M., Guizar-Sicairos, M., Hanke, I., Ganschow, S., Schlom, D. G. and Muller, D. A., 2021,  Electron ptychography achieves atomic-resolution limits set by lattice vibrations, Science 372, 826.
 3. Chen, Z. J., Yi; Muller, David A.; Odstrčil, Michal (2021) PtychoShelves_EM, source code for multislice electron ptychography, (Zenodo  https://doi.org/10.5281/zenodo.4659690 ).
-4. Wakonig, K., Stadler, H.-C., Odstrcil, M., Tsai, E. H. R., Diaz, A., Holler, M., Usov, I., Raabe, J., Menzel, A. and Guizar-Sicairos, M., 2020,  PtychoShelves, a versatile high-level framework for high-performance analysis of ptychographic dataThis article will form part of a virtual special issue of the journal on ptychography software and technical developments, Journal of Applied Crystallography 53, 574-586.
+4. Wakonig, K., Stadler, H.-C., Odstrcil, M., Tsai, E. H. R., Diaz, A., Holler, M., Usov, I., Raabe, J., Menzel, A. and Guizar-Sicairos, M., 2020,  PtychoShelves, a versatile high-level framework for high-performance analysis of ptychographic data, Journal of Applied Crystallography 53, 574-586.
 5. Otsu, N., 1979,  A Threshold Selection Method from Gray-Level Histograms, IEEE Transactions on Systems, Man, and Cybernetics 9, 62-66.
