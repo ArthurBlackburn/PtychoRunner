@@ -7,7 +7,7 @@ PtychoShelves license. Some functions in the Runner directory do not
 call or make use of PtychoShelves. Software functions we have authored 
 in the Runner directory that standalone from and have no dependencies
 on PtychoShevles, are provided under a GNU general public license 
-(Version 3) provided below, unless overrided by statements in the header
+(Version 3) provided below, unless overridden by statements in the header
 files of the individual function file.
 
 
