@@ -1,7 +1,7 @@
 Software provided in the PtychoShelvesMS directory follows the 
 PtychoShelves license provided in PtychoShelvesMS/License.txt. The 
-readme.txt file in PtychoSheves directory should also be read. Some of
-the software functions provided in the Runner directory may call 
+readme.txt file in the PtychoShevesMS directory should also be read. Some
+software functions provided in the Runner directory may call 
 PtychoShelves, and so usage of these functions is constrained by the
 PtychoShelves license. Some functions in the Runner directory do not 
 call or make use of PtychoShelves. Software functions we have authored 
