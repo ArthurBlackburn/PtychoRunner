@@ -92,9 +92,14 @@ for set_number = run_inds
     else
         experi_def.summary_table.load_from_mat = false;
     end
+    % Added by A. Blackburn: py4DSTEM/EMD file produced by ptyzer's
+    % azohp_to_py4d.py (D:\Data\Repos\ptyzer). Diffraction data AND scan
+    % positions both live in this single file, so it gets its own load
+    % branch below rather than going through load_from_mat or loadHPL.
+    experi_def.summary_table.load_from_h5 = strcmpi(ext,'h5');
     % check that incompatible parameters have not been given.
-    if experi_def.summary_table.load_from_mat 
-        experi_def.summary_table.use_spreadsheet_experi_params = true; 
+    if experi_def.summary_table.load_from_mat || experi_def.summary_table.load_from_h5
+        experi_def.summary_table.use_spreadsheet_experi_params = true;
     end
     
     if ~testing
@@ -172,6 +177,43 @@ for set_number = run_inds
                 end
             end
             clear dp_set
+        elseif experi_def.summary_table.load_from_h5
+            % Added by A. Blackburn: parse a py4DSTEM/EMD '.h5' file produced
+            % by ptyzer's azohp_to_py4d.py. Mirrors the '.h5' parsing already
+            % proven in +detector/+prep_data/+matlab_aps/load_data.m (data
+            % reshape) and +scans/+positions/hdf5_pos.m (scan_coords_pointlist)
+            % - see those files for the detailed reasoning on the reversed
+            % HDF5 axis order and position units.
+            h5root = '/py4DSTEM_root/datacube';
+            grid_shape = h5read(loadup, [h5root '/metadatabundle/general_meta/meshParams/shape']);
+            data4d = h5read(loadup, [h5root '/data']);
+            sz = size(data4d);
+            n_scan = prod(double(grid_shape));
+            if numel(sz) ~= 4 || prod(double(sz(3:4))) ~= n_scan
+                error(['Unexpected shape for %s: got %s, expected the last two ', ...
+                       'dimensions to multiply out to %d scan positions (grid_shape = [%d %d]).'], ...
+                       [h5root '/data'], mat2str(sz), n_scan, grid_shape(1), grid_shape(2));
+            end
+            exp_data.diffPats = reshape(data4d, sz(1), sz(2), n_scan);
+            clear data4d
+            permute_order_of_loaded_dps = []; % no permute needed, matches load_data.m's '.h5' case
+            exp_data.attrs.meshParams.shape = grid_shape;
+
+            % The diffraction file and the position source are the same
+            % file for this format - positions live under
+            % scan_coords_pointlist (already-flattened, nm, real-space
+            % Cartesian). crds_file_name is recorded here for provenance
+            % and is what ptychoset_mult.m's conv_ptychoset_cSAXS_MSlc
+            % falls back to as the position source file for '.h5' data.
+            crds_file_name = loadup;
+            crds.x_arr = (h5read(loadup, [h5root '/scan_coords_pointlist/x']))'; % nm
+            crds.y_arr = (h5read(loadup, [h5root '/scan_coords_pointlist/y']))'; % nm
+            % azohp_to_py4d.py's scan_coords are already real-space,
+            % Cartesian-oriented (x,y) nm coordinates, so the trans_coords
+            % switch below (which now runs on crds.x_arr/y_arr exactly as
+            % it does for the .mat+.hdf5 case) should be calibrated per
+            % dataset in the spreadsheet starting from case 3 (identity) -
+            % see ptyzer/io/private_notes/PtychoRunner_h5_loader_notes.md.
         else
             exp_data = loadHPL(loadup);
             if ~isfield(exp_data,'diffPats')

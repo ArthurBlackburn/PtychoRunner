@@ -1527,7 +1527,15 @@ end
             p.   detector.upsampling = false;             % upsample the measured data by 2^data_upsampling, (transposed operator to the binning), it can be used for superresolution in nearfield ptychography or to account for undersampling in a far-field dataset
             p.   detector.burst_frames = 1;               % number of frames collected per scan position
             p.   detector.dp_dat_filename = set_params.file_name{set_number};
-            
+            % Added by A. Blackburn: PtychoProcessFromTableF_MS.m already
+            % parsed the source file and applied subregion cropping / dose
+            % adjustment to build ps.dps.ims_proc - pass it straight through
+            % so +detector/+prep_data/+matlab_aps/load_data.m reuses it
+            % instead of re-reading and re-deriving the same data from
+            % dp_dat_filename above. Unifies what used to be two independent
+            % loads of the same file into one.
+            p.   preload.diffraction = ps.dps.ims_proc;
+
             p.   prepare.data_preparator = 'matlab_aps';  % data preparator; 'python' or 'matlab' or 'matlab_aps'
             p.   prepare.auto_prepare_data = true;        % if true: prepare dataset from raw measurements if the prepared data does not exist
             p.   prepare.force_preparation_data = true;   % Prepare dataset even if it exists, it will overwrite the file % Default: @prepare_data_2d
@@ -1546,11 +1554,38 @@ end
             p.   scan.roi_label = [];                      % For APS data
             p.   scan.format = scan_string_format;         % For APS data format for scan directory generation
             p.   scan.custom_positions_source = ps.recon_dat.ptychoshelves.crds_file;   % custom: a string name of a function that defines the positions; also accepts mat file with entry 'pos', see +scans/+positions/+mat_pos.m
+            % Added by A. Blackburn: if the diffraction data file itself is a
+            % py4DSTEM/EMD '.h5' file (produced by ptyzer's azohp_to_py4d.py) and
+            % no separate positions file was given, default to reading the scan
+            % positions from that same file - it carries both the diffraction
+            % stack and the scan_coords_pointlist positions (see the '.h5' cases
+            % in +detector/+prep_data/+matlab_aps/load_data.m and
+            % +scans/+positions/hdf5_pos.m) - rather than requiring a second,
+            % separately-specified positions file as for the '.hdf5'/'.mat' cases.
+            if isempty(p.scan.custom_positions_source) || ~exist(p.scan.custom_positions_source,'file')
+                [~,~,dp_ext] = fileparts(set_params.file_name{set_number});
+                if strcmpi(dp_ext,'.h5')
+                    p.scan.custom_positions_source = fullfile(set_params.base_dir{set_number}, set_params.file_name{set_number});
+                end
+            end
             p.   scan.custom_params = [];                  % custom: the parameters to feed to the custom position function.
             p.   scan.trans_coords = set_params.trans_coords(set_number); % parameter to allow transformation of position coordinates.
             p.   scan.rotation = set_params.meas_rot_est(set_number) - set_params.rot_applied(set_number);
             p.   scan.scale_in_ps = set_params.scale_in_ps(set_number);
-            
+            % Added by A. Blackburn: pass through the scan positions already
+            % computed by PtychoProcessFromTableF_MS.m (trans_coords applied,
+            % rotated, drift-corrected and subregion-cropped if applicable)
+            % so +scans/+positions/hdf5_pos.m reuses them directly instead of
+            % re-reading the position source file and re-deriving positions
+            % via its own (independent, but equivalent for the no-drift case)
+            % trans_coords/rotation logic. ps.dps.rotated_posns is 2xN in nm;
+            % hdf5_pos.m expects Nx2 in metres.
+            p.   scan.preloaded_positions_real = (ps.dps.rotated_posns * 1e-9).';
+            if ~isnan(set_params.scale_in_ps(set_number)) && set_params.scale_in_ps(set_number) ~= 0
+                warning(['scale_in_ps is set for set %d but positions are pre-loaded ', ...
+                         '(already scaled via set_params.scale upstream); scale_in_ps will be ignored.'], set_number);
+            end
+
             % I/O
             p.   prefix = local_exec_params.recon_savename;    % For automatic output filenames. If empty: scan number;
             p.   suffix = '';                             % Optional suffix for reconstruction 

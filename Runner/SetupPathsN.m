@@ -11,7 +11,7 @@ function exec_params = SetupPathsN(force_local_repo)
 % 
 % *******************************************************************
 
-repo_name = 'ps-shelves-test01';
+repo_name = 'ptychorunner_dev';
 ptychoshelves_subdir = 'PtychoShelvesMS';
 
 path_entry = @(repo_path, varargin) [fullfile(repo_path, repo_name, varargin{:}),';'];
@@ -39,11 +39,11 @@ if contains(lower(archstr),'win')
             show_last_recon = false;
             recipe_exec_char = 'a'; 
             plot_results_every = 0;
-            repo_path = 'D:\Data\Repos'; 
+            repo_path = 'D:\Data\Repos\PtychoRunner_Dev'; 
             if force_local_repo
                 addpath(repo_paths(repo_path),'-begin');
             end
-            datasets_path = 'C:\Users\Arthur\OneDrive - University of Victoria\EMG\Ptycho\DemoAndTestSets\DatasetFiles';
+            datasets_path = 'C:\Users\Arthur\OneDrive - University of Victoria\EMG\Ptycho\DemoAndTestSets';
         elseif contains(aa,'BILBO')
             one_loc = 'C:\Users\stell_000\OneDrive\PtychoShare\';
             use_pi_box = false;

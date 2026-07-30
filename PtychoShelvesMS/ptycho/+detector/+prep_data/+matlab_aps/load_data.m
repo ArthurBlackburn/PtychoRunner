@@ -27,6 +27,16 @@ utils.verbose(2, 'Loading raw data of scan %05d.', p.scan_number(p.scanID))
 files = detStorage.files;
 [~,~,ext]=fileparts(files{p.scanID});
 ismask = false;
+if isfield(p,'preload') && isfield(p.preload,'diffraction') && ~isempty(p.preload.diffraction)
+    % Added by A. Blackburn: PtychoProcessFromTableF_MS.m already parsed the
+    % source file (.mat/.hdf5/.h5) and applied subregion cropping / dose
+    % adjustment, so reuse that array directly rather than re-reading and
+    % re-deriving it from disk here. See the matching preload wiring in
+    % Runner/ptychoset_mult.m's conv_ptychoset_cSAXS_MSlc and the equivalent
+    % short-circuit in +scans/+positions/hdf5_pos.m.
+    utils.verbose(2, 'Using pre-loaded diffraction data from PtychoProcessFromTableF_MS.m; skipping file read.');
+    data = p.preload.diffraction;
+else
 switch lower(ext)
     case '.hdf5'
         data = h5read(files{p.scanID},'/dp');
@@ -39,8 +49,54 @@ switch lower(ext)
         end
         % data=load(files{p.scanID},'dp');
         data=double(data.dp);
+    case '.h5'
+        % py4DSTEM/EMD file produced by ptyzer's azohp_to_py4d.py (D:\Data\Repos\ptyzer).
+        % Added by A. Blackburn, so that Azorus data converted straight to py4DSTEM's
+        % format can be reconstructed without first exporting to the separate .mat +
+        % position .hdf5 pair PrepareData.m produces. See +scans/+positions/hdf5_pos.m
+        % for the matching scan-position loader (case '.h5' there).
+        h5file = files{p.scanID};
+        h5root = '/py4DSTEM_root/datacube';
+        % grid_shape = [Nrows, Ncols], the Azorus scan mesh shape. Scan positions were
+        % raveled into scan_coords_pointlist (see hdf5_pos.m) in the same order
+        % (numpy order='C', i.e. Ncols/columns fastest) as the original Azorus
+        % acquisition, so that order must be reproduced here for the diffraction
+        % stack to stay aligned, point for point, with the loaded positions.
+        grid_shape = h5read(h5file, [h5root '/metadatabundle/general_meta/meshParams/shape']);
+        data4d = h5read(h5file, [h5root '/data']);
+        % data4d was written by h5py/emdfile with numpy shape
+        % (Rx, Ry, Qx, Qy) = grid_shape + [detector pixel dims]. MATLAB's HDF5
+        % readers (h5read, and the low-level H5D.read used in loadHPL.m's
+        % fix_data()) return array dimensions in REVERSED order relative to how
+        % they were written, so data4d actually comes back sized [Qy, Qx, Ry, Rx].
+        % Collapsing the trailing two ([Ry, Rx]) dimensions with a plain reshape
+        % (no permute needed) reproduces the same flat scan-position order as
+        % scan_coords_pointlist / the original Azorus acquisition, since MATLAB's
+        % native column-major flattening of a fully dimension-reversed array walks
+        % the same underlying bytes, in the same order, as numpy's default
+        % (order='C') ravel of the original array.
+        sz = size(data4d);
+        n_scan = prod(double(grid_shape));
+        if numel(sz) ~= 4 || prod(double(sz(3:4))) ~= n_scan
+            error(['Unexpected shape for %s: got %s, expected the last two ', ...
+                   'dimensions to multiply out to %d scan positions (grid_shape = [%d %d]). ', ...
+                   'The assumed reversed-axis-order convention (see comments above) may not ', ...
+                   'hold for this file.'], ...
+                   [h5root '/data'], mat2str(sz), n_scan, grid_shape(1), grid_shape(2));
+        end
+        data = reshape(data4d, sz(1), sz(2), n_scan);
+        clear data4d
+        % data is now [Qy, Qx, n_scan]: the two detector-pixel axes come back
+        % transposed relative to Azorus's native axis order, since py4DSTEM's
+        % DataCube labels its detector axes 'Qx'/'Qy' purely positionally, not
+        % semantically. Verify this (e.g. against a virtual bright-field image, or
+        % against the mean diffraction pattern already stored at
+        % [h5root '/dp_mean/data'] in the same file) and, if it looks transposed,
+        % set det.params.orientation(1) = true for this detector - that transpose
+        % is then applied generically by the orientation-handling code below.
     otherwise
         error('data format not supported!');
+end
 end
 data = squeeze(data);
 utils.verbose(2, 'Loaded data from: %s', files{p.scanID});
